@@ -229,3 +229,74 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   .topbar-track { min-width:0;padding:0 10px; }.topbar-track strong { font-size:9px; }
   .deck { aspect-ratio:1.18/1; }.deck-controls { width:27%; }.turntable-caption { font-size:6px; }
 }
+
+/* Visual 2.1 — console hi-fi escura inspirada na restauração que funcionou */
+:root { --console-orange:#e89043; --console-glow:#ff9b3d; }
+.app-shell { background:#050504; }
+.sidebar { width:286px;flex-basis:286px;border-color:#28231e;border-radius:0 14px 14px 0;background:linear-gradient(90deg,#0b0a09,#0e0d0c 78%,#080706);box-shadow:10px 0 30px rgba(0,0,0,.62); }
+.brand { height:118px;padding:0 36px; }
+.brand strong { color:#e2a677;font-size:35px;line-height:.78;text-shadow:0 2px 15px rgba(231,143,74,.13); }
+.brand span { color:#5f574f;font-size:7px; }
+.search-box { height:48px;margin:5px 21px 15px;border-radius:14px;border-color:#3a2c20;background:#0c0b09; }
+.search-box:focus-within { border-color:#8f5d32;box-shadow:0 0 0 1px rgba(232,144,67,.18); }
+.nav-item,.category-tabs button { color:#b6ada5; }
+.nav-item.active,.nav-item:hover,.category-tabs button:hover,.category-tabs button.active { background:#2b2621;color:#f3e9df; }
+.category-tabs .icon,.nav-item.active .icon { color:var(--console-orange); }
+.library-item { min-height:52px; }.library-item:hover,.library-item.selected { background:#211c18;box-shadow:inset -3px 0 var(--console-orange); }
+.profile { height:78px;border-top-color:#2b241f; }
+.avatar { background:#34261d;color:#efb681; }
+.studio { width:calc(100% - 286px);padding:0 8px 8px;background:linear-gradient(180deg,#080706,#030303); }
+.studio-topbar { height:72px;max-width:none;padding:0 14px;border-bottom:1px solid #1e1a17;background:#060605; }
+.topbar-nav button { width:38px;height:38px;border-color:#1f1c19;background:#0b0a09; }
+.topbar-track { max-width:420px;height:38px;border-radius:22px;border-color:#3b2b1e;background:#090807; }
+.topbar-track span.playing,.topbar-nav button:hover { color:var(--console-orange); }
+.topbar-status.playing i { background:#3be377;box-shadow:0 0 12px #2fe06e; }
+.top-grid { height:clamp(520px,calc(100vh - 258px),690px);grid-template-columns:minmax(560px,1fr) minmax(330px,390px);gap:8px;max-width:none;margin:0; }
+.turntable-section { min-height:0;display:flex;flex-direction:column; }
+.deck { flex:1;min-height:0;max-height:none;aspect-ratio:auto;border:10px solid #1b100b;border-radius:5px;background:linear-gradient(105deg,#4e2d1c,#2b1911 45%,#130d0a);box-shadow:inset 0 0 0 2px #080605,inset 0 1px rgba(255,211,168,.14),0 18px 45px #000; }
+.deck::before { inset:8px;border-color:rgba(223,160,100,.12);border-radius:3px; }
+.wood-grain { opacity:.64;background:repeating-linear-gradient(2deg,transparent 0 7px,rgba(6,2,1,.5) 8px 10px,transparent 12px 20px),linear-gradient(90deg,rgba(167,92,46,.14),transparent 36%,rgba(0,0,0,.35)); }
+.platter { left:4%;top:3%;width:min(74%,760px);background:repeating-radial-gradient(circle,#6f6c65 0 2px,#292826 3px 5px);box-shadow:0 20px 28px rgba(0,0,0,.9),inset 0 1px #d0c9bc,0 0 0 5px #131211; }
+.platter-dots { border-color:#948c7e;opacity:.4; }
+.vinyl { background:repeating-radial-gradient(circle,#090909 0 2px,#1b1b1a 3px 4px,#090909 5px 7px);box-shadow:inset 0 0 55px #000,0 1px 3px #5d5a54; }
+.record-label { background:radial-gradient(circle at 35% 30%,#ed8068,#9b4037 72%); }
+.tonearm-assembly { right:1%;top:1.5%;width:31%;height:81%;filter:drop-shadow(9px 12px 8px rgba(0,0,0,.75)); }
+.arm-tube { width:10px;background:linear-gradient(90deg,#090909,#5b5b58 48%,#111); }
+.counterweight,.headshell { background:linear-gradient(90deg,#080808,#5b5954,#111); }
+.power-knob { width:54px;height:54px;background:radial-gradient(circle,#151412 0 38%,#77736b 40% 43%,#141311 46%); }
+.power-knob i.on { background:var(--console-orange);box-shadow:0 0 9px var(--console-glow); }
+.rpm-switch button.active { color:#ffc68f;border-color:#a86632;background:#4b2b18; }
+.pitch-label { color:#c47c43; }
+.turntable-caption { margin:7px 8px 0;color:#55493f; }
+.now-playing { height:100%;padding:20px;border-color:#2b241f;border-radius:8px;background:linear-gradient(180deg,#0c0b09,#080706);box-shadow:inset 0 0 35px rgba(0,0,0,.45); }
+.panel-heading h2 { display:none; }.panel-heading { margin-bottom:14px; }.panel-heading .eyebrow { color:#c8986d;font-size:9px; }
+.album-art { width:min(82%,300px);flex:0 0 auto;margin:0 auto 18px;border-radius:7px;background:#eee;box-shadow:0 12px 28px #000; }
+.track-info h3 { font-size:30px;color:#eee4da; }.track-info p { color:#d9965b; }.track-info small { color:#9a7354; }
+.progress-wrap input,.volume-control input { background:linear-gradient(90deg,var(--console-orange) var(--progress),#58524c var(--progress)); }
+.playback-controls button.active,.open-spotify { color:var(--console-orange); }
+.playback-controls .main-play { width:58px;height:58px;border-color:var(--console-orange)!important;box-shadow:0 0 0 1px #5d3317,inset 0 0 20px rgba(232,144,67,.08); }
+.analog-panel { min-height:168px;max-width:none;margin:8px 0 0;grid-template-columns:130px minmax(330px,1.25fr) minmax(470px,1.65fr) 130px;gap:18px;padding:14px 25px;border-color:#2c251f;border-radius:6px;background:linear-gradient(#171512,#090807);box-shadow:inset 0 1px rgba(255,255,255,.06),0 10px 28px #000; }
+.vu-meter { height:106px;border-color:#070605;background:linear-gradient(#dc9c45,#a46227);box-shadow:inset 0 0 22px #6e3d19,0 3px 8px #000; }
+.knob { width:58px;height:58px;background:conic-gradient(from 200deg,#0d0c0b,#77736c,#111,#5f5a53,#111); }
+.knob i { background:#ec9b50; }
+
+@media(max-width:1180px) {
+  .sidebar { width:254px;flex-basis:254px; }.studio { width:calc(100% - 254px); }
+  .top-grid { grid-template-columns:minmax(430px,1fr) minmax(295px,340px); }
+  .analog-panel { grid-template-columns:110px 1fr 1.4fr; }.output-control { display:none; }
+}
+@media(max-width:780px) {
+  .studio { width:100%;padding:0 8px 14px; }.top-grid { height:auto;display:flex; }
+  .deck { min-height:430px;aspect-ratio:1.2/1; }.now-playing { height:auto; }
+  .analog-panel { grid-template-columns:1fr; }.album-art { width:42%;margin:0 16px 14px 0; }
+}
+@media(max-height:800px) and (min-width:781px) {
+  .album-art { width:min(66%,220px);margin-bottom:9px; }
+  .now-playing { padding:16px 20px; }
+  .panel-heading { margin-bottom:8px; }
+  .track-info h3 { font-size:24px; }
+  .progress-wrap { margin:11px 0 8px; }
+  .playback-controls .main-play { width:50px;height:50px; }
+  .now-footer { padding-top:10px; }
+  .track-details { display:none; }
+}

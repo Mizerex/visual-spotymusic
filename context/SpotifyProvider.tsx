@@ -139,8 +139,9 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
         return (data.items || []).map((entry: any) => entry.item || entry.track).filter((entry: any) => entry?.type !== "episode").map(mapTrack);
       }
       if (item.kind === "album") {
-        const data = await spotifyApi<any>(`/albums/${item.id}/tracks?limit=50`);
-        return (data.items || []).map((track: any) => mapTrack({ ...track, album: { id: item.id, name: item.name, images: item.image ? [{ url: item.image }] : [] } }));
+        const data = await spotifyApi<any>(`/albums/${item.id}`);
+        const tracks = data.items?.items || data.tracks?.items || [];
+        return tracks.map((track: any) => mapTrack({ ...track, album: { id: data.id || item.id, name: data.name || item.name, images: data.images || (item.image ? [{ url: item.image }] : []), total_tracks: data.total_tracks } }));
       }
       const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(`artist:${item.name}`)}&type=track&limit=10`);
       return (data.tracks?.items || []).map(mapTrack);

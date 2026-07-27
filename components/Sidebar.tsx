@@ -40,7 +40,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       <button className="detail-back" onClick={() => setDetail(null)}>← Voltar</button>
       <div className="detail-hero">{detail.item.image ? <img src={detail.item.image} alt="" /> : <span>♫</span>}<div><small>{detail.item.kind.toUpperCase()}</small><strong>{detail.item.name}</strong><p>{detail.item.subtitle}</p></div></div>
       <button className="detail-play" onClick={() => playItem(detail.item)}>▶ Reproduzir</button>
-      {detailLoading ? <p className="detail-loading">Carregando faixas…</p> : <LibraryList items={detail.tracks} selected={playback.track?.id} onPlay={playItem} emptyText="Nenhuma faixa disponível." />}
+      {detailLoading ? <p className="detail-loading">Carregando faixas…</p> : <LibraryList items={detail.tracks} selected={playback.track?.id} onPlay={playItem} emptyText="O Spotify não liberou a lista, mas Reproduzir ainda pode tocar a coleção." />}
     </div> : <LibraryList items={searchItems || library[active]} selected={playback.track?.id} onPlay={item => { void openItem(item); }} emptyText={query ? "Nenhum resultado para esta busca." : "Sua biblioteca aparecerá aqui."} />}</div>
     <footer className="profile"><span className="avatar">{profile?.display_name?.slice(0, 1).toUpperCase() || "V"}</span><span><strong>{profile?.display_name || "Visual Listener"}</strong><small>{demo ? "Modo demonstração" : playerReady ? "Toca-discos online" : "Conectando ao Spotify"}</small></span><button onClick={logout} aria-label="Desconectar do Spotify"><Icon name="logout" /></button></footer>
   </aside>;
