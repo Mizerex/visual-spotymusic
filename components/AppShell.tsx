@@ -8,6 +8,7 @@ import { NowPlaying } from "./NowPlaying";
 import { AnalogPanel } from "./AnalogPanel";
 import { ErrorToast } from "./ErrorToast";
 import { Icon } from "./Icon";
+import { Topbar } from "./Topbar";
 
 export function AppShell() {
   const { authenticated, ready, toggle } = useSpotifyAuth();
@@ -19,7 +20,7 @@ export function AppShell() {
     <button className="mobile-menu" onClick={() => setSidebarOpen(true)} aria-label="Abrir biblioteca"><Icon name="menu" /><span>VISUAL SPOTYMUSIC</span></button>
     <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
     {sidebarOpen && <button className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-label="Fechar biblioteca" />}
-    <main className="studio"><div className="top-grid"><Turntable /><NowPlaying /></div><AnalogPanel /></main>
+    <main className="studio"><Topbar onMenu={() => setSidebarOpen(true)} /><div className="top-grid"><Turntable /><NowPlaying /></div><AnalogPanel /></main>
     <ErrorToast />
   </div>;
 }
