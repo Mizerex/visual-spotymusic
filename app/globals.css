@@ -63,6 +63,14 @@ button:focus-visible, input:focus-visible { outline:2px solid var(--amber); outl
 .library-copy strong { font-size:12px;font-weight:600; }.library-copy small { color:#766d62;font-size:9px;margin-top:4px; }
 .row-play { opacity:0;color:#d49359;font-size:10px; }.library-item:hover .row-play,.library-item.selected .row-play { opacity:1; }
 .library-empty { padding:35px 22px;text-align:center;color:#61584e;font-size:11px; }.library-empty span { font-size:27px;color:#6f5036; }
+.library-detail { padding:10px; }
+.detail-back { border:0;background:none;color:#b9987c;cursor:pointer;padding:8px 4px;font-size:11px; }
+.detail-hero { display:flex;gap:11px;align-items:center;padding:10px 4px 14px; }
+.detail-hero>img,.detail-hero>span { width:58px;height:58px;flex:0 0 58px;object-fit:cover;display:grid;place-items:center;background:#2b2119;color:#b78359; }
+.detail-hero>div { min-width:0; }.detail-hero small,.detail-hero strong,.detail-hero p { display:block;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.detail-hero small { color:#8f735d;font-size:7px;letter-spacing:.16em; }.detail-hero strong { margin:4px 0;font-size:14px; }.detail-hero p { color:#756b61;font-size:9px; }
+.detail-play { width:100%;height:36px;margin-bottom:7px;border:1px solid #a66f46;border-radius:3px;background:#6f4328;color:#f4e5d6;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:.08em; }
+.detail-loading { padding:25px;text-align:center;color:#8c7e70;font-size:10px; }
 .profile { height:64px;padding:0 16px;display:flex;align-items:center;gap:9px;border-top:1px solid var(--line); }
 .avatar { width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#795035;font:17px "Libre Caslon Display"; }
 .profile>span:nth-child(2) { flex:1;min-width:0; }.profile strong,.profile small { display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }.profile strong { font-size:11px; }.profile small { margin-top:2px;color:#746b60;font-size:8px; }
@@ -82,7 +90,10 @@ button:focus-visible, input:focus-visible { outline:2px solid var(--amber); outl
 .vinyl { position:absolute;inset:0;border-radius:50%;will-change:transform;background:repeating-radial-gradient(circle,#131313 0 2px,#252422 3px 4px,#111 5px 7px);box-shadow:inset 0 0 35px #000,0 1px 2px #555; }
 .vinyl::after { content:"";position:absolute;inset:4%;border-radius:50%;background:conic-gradient(from 20deg,transparent 0 10%,rgba(255,255,255,.07) 14%,transparent 24% 68%,rgba(255,255,255,.045) 73%,transparent 82%); }
 .vinyl-shine { position:absolute;inset:18%;border-radius:50%;border:1px solid rgba(255,255,255,.08); }
+.record-grooves { position:absolute;inset:7%;border-radius:50%;background:repeating-radial-gradient(circle,transparent 0 7px,rgba(255,255,255,.055) 8px 9px,transparent 10px 14px);opacity:.55; }
 .record-label { position:absolute;inset:38%;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,#cf794b,#813821 70%);color:#23120d;box-shadow:0 0 0 1px #4d2015;z-index:2; }
+.record-label.has-cover { overflow:hidden;background:#1a1511; }
+.record-label img { width:100%;height:100%;object-fit:cover; }
 .record-label span { font:clamp(8px,1vw,14px) "Libre Caslon Display";letter-spacing:.08em; }.record-label small { font-size:clamp(4px,.45vw,6px);font-weight:700; }.record-label i { width:34%;height:1px;background:#452019;margin:3px; }
 .spindle-hole { position:absolute;width:5px;height:5px;border-radius:50%;background:#d1c9b7;left:calc(50% - 2px);top:calc(50% - 2px);z-index:3; }
 .tonearm-assembly { position:absolute;right:1%;top:7%;width:29%;height:72%; }
@@ -103,6 +114,8 @@ button:focus-visible, input:focus-visible { outline:2px solid var(--amber); outl
 .album-art { aspect-ratio:1;position:relative;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#532d1d,#15110e 65%);box-shadow:0 13px 27px #050403;margin-bottom:17px; }.album-art img { width:100%;height:100%;object-fit:cover; }.album-sleeve-edge { position:absolute;top:0;right:0;width:5px;height:100%;background:rgba(255,255,255,.1); }
 .fallback-art { position:absolute;inset:9%;border:1px solid rgba(229,183,128,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#9f5531,#472316 65%); }.fallback-art span { font:clamp(18px,3vw,36px) "Libre Caslon Display";letter-spacing:.16em; }.fallback-art b { margin:10px;font-size:40px;color:#dfb27b; }.fallback-art small { font-size:8px;letter-spacing:.24em; }
 .track-info { display:flex;align-items:center;gap:10px; }.track-info>div { min-width:0;flex:1; }.track-info h3,.track-info p,.track-info small { display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }.track-info h3 { margin:0;font:24px/1.2 "Libre Caslon Display"; }.track-info p { margin:6px 0 2px;color:#ba8a64;font-size:12px; }.track-info small { color:#746a5e;font-size:9px; }.track-info button { border:0;background:none;font-size:25px;color:#8f7d6b;cursor:pointer; }.track-info button.liked { color:#c35f45; }
+.open-spotify { display:inline-flex;align-items:center;margin-top:8px;color:#81c995;text-decoration:none;font-size:9px;font-weight:700;letter-spacing:.06em; }
+.open-spotify:hover { text-decoration:underline; }
 .progress-wrap { margin:18px 0 12px; }.progress-wrap input,.volume-control input { width:100%;height:3px;margin:0;appearance:none;background:linear-gradient(90deg,#b9703d var(--progress),#3e352c var(--progress));border-radius:4px;cursor:pointer; }.progress-wrap input::-webkit-slider-thumb,.volume-control input::-webkit-slider-thumb { appearance:none;width:10px;height:10px;border-radius:50%;background:#d9c7ae;box-shadow:0 0 0 2px #5e4b3a; }.progress-wrap>div { display:flex;justify-content:space-between;margin-top:7px;color:#6f665b;font-size:8px;font-variant-numeric:tabular-nums; }
 .playback-controls { display:flex;justify-content:center;align-items:center;gap:13px; }.playback-controls button { width:34px;height:34px;border:0;background:none;color:#9c8f7f;cursor:pointer;font-size:14px; }.playback-controls button.active { color:#d78249; }.playback-controls .main-play { width:52px;height:52px;border-radius:50%;color:#1b120c;background:linear-gradient(#d3a36e,#8e572f);box-shadow:inset 0 1px #f4d4ad,0 6px 15px #050403;font-size:18px; }
 .now-footer { margin-top:auto;padding-top:18px;display:flex;align-items:center;gap:12px;border-top:1px solid var(--line); }.now-footer>span { color:#665d53;font-size:7px;font-weight:700;letter-spacing:.18em; }.volume-control { flex:1;display:flex;align-items:center;gap:8px; }.volume-control button { width:27px;border:0;background:none;color:#9a8d7d;font-size:10px;cursor:pointer; }.volume-control input { flex:1; }

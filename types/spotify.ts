@@ -5,8 +5,10 @@ export type SpotifyTrack = {
   uri: string;
   name: string;
   duration_ms: number;
-  album: { name: string; uri?: string; images: SpotifyImage[] };
+  album: { id?: string; name: string; uri?: string; images: SpotifyImage[]; total_tracks?: number };
   artists: { name: string; uri?: string }[];
+  external_urls?: { spotify?: string };
+  track_number?: number;
   is_playable?: boolean;
 };
 
@@ -60,4 +62,5 @@ export type SpotifyPlayer = {
   seek: (positionMs: number) => Promise<void>;
   setVolume: (volume: number) => Promise<void>;
   activateElement: () => Promise<void>;
+  getCurrentState: () => Promise<any | null>;
 };
