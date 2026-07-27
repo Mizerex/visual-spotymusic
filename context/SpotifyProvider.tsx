@@ -94,14 +94,14 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   }, [authenticated, demo]);
 
   useEffect(() => {
-    if (!demo || !playback.isPlaying) { if (demoTimer.current) clearInterval(demoTimer.current); return; }
+    if (!playback.isPlaying || !playback.track || playback.duration <= 0) { if (demoTimer.current) clearInterval(demoTimer.current); return; }
     demoTimer.current = setInterval(() => setPlayback(previous => {
       const position = previous.position + 500;
       if (position >= previous.duration) return { ...previous, isPlaying: false, position: previous.duration };
       return { ...previous, position };
     }), 500);
     return () => { if (demoTimer.current) clearInterval(demoTimer.current); };
-  }, [demo, playback.isPlaying]);
+  }, [playback.isPlaying, playback.track, playback.duration]);
 
   const loadLibrary = useCallback(async (category: Category) => {
     if (demo) {
