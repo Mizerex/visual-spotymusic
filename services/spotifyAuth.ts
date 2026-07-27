@@ -11,8 +11,17 @@ const scopes = [
   "playlist-read-private", "user-follow-read", "user-read-currently-playing",
 ];
 
-function clientId() {
-  return process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID?.trim() || "";
+let cachedClientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID?.trim() || "";
+
+async function clientId() {
+  if (cachedClientId) return cachedClientId;
+  try {
+    const response = await fetch("/spotify-config.json", { cache: "no-store" });
+    if (response.ok) cachedClientId = ((await response.json()).clientId || "").trim();
+  } catch {
+    cachedClientId = "";
+  }
+  return cachedClientId;
 }
 
 export function redirectUri() {
@@ -30,14 +39,15 @@ function base64Url(bytes: ArrayBuffer) {
 }
 
 export async function beginSpotifyLogin() {
-  if (!clientId()) throw new Error("Defina NEXT_PUBLIC_SPOTIFY_CLIENT_ID antes de conectar.");
+  const spotifyClientId = await clientId();
+  if (!spotifyClientId) throw new Error("O Client ID do Spotify ainda não foi configurado.");
   const verifier = randomString();
   const challenge = base64Url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
   const state = randomString(24);
   sessionStorage.setItem(VERIFIER_KEY, verifier);
   sessionStorage.setItem(STATE_KEY, state);
   const params = new URLSearchParams({
-    client_id: clientId(), response_type: "code", redirect_uri: redirectUri(),
+    client_id: spotifyClientId, response_type: "code", redirect_uri: redirectUri(),
     code_challenge_method: "S256", code_challenge: challenge, state,
     scope: scopes.join(" "), show_dialog: "false",
   });
@@ -47,7 +57,9 @@ export async function beginSpotifyLogin() {
 export async function exchangeCallback(code: string, state: string) {
   const verifier = sessionStorage.getItem(VERIFIER_KEY);
   if (!verifier || state !== sessionStorage.getItem(STATE_KEY)) throw new Error("A validação de segurança da conexão falhou.");
-  const body = new URLSearchParams({ client_id: clientId(), grant_type: "authorization_code", code, redirect_uri: redirectUri(), code_verifier: verifier });
+  const spotifyClientId = await clientId();
+  if (!spotifyClientId) throw new Error("O Client ID do Spotify não está disponível.");
+  const body = new URLSearchParams({ client_id: spotifyClientId, grant_type: "authorization_code", code, redirect_uri: redirectUri(), code_verifier: verifier });
   const response = await fetch(TOKEN_URL, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
   if (!response.ok) throw new Error("Não foi possível concluir a conexão com o Spotify.");
   const data = await response.json();
@@ -59,7 +71,9 @@ export async function exchangeCallback(code: string, state: string) {
 export async function refreshSpotifyToken() {
   const current = tokenManager.get();
   if (!current?.refreshToken) return null;
-  const body = new URLSearchParams({ client_id: clientId(), grant_type: "refresh_token", refresh_token: current.refreshToken });
+  const spotifyClientId = await clientId();
+  if (!spotifyClientId) return null;
+  const body = new URLSearchParams({ client_id: spotifyClientId, grant_type: "refresh_token", refresh_token: current.refreshToken });
   const response = await fetch(TOKEN_URL, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
   if (!response.ok) { tokenManager.clear(); return null; }
   const data = await response.json();
