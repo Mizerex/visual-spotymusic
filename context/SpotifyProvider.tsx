@@ -124,7 +124,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       const items: LibraryItem[] = source.map((raw: any) => {
         const value = raw.track || raw.album || raw;
         if (category === "tracks") return mapTrack(value);
-        return { id: value.id, uri: value.uri, name: value.name, subtitle: category === "artists" ? "Artista" : category === "albums" ? value.artists.map((a: any) => a.name).join(", ") : `${value.tracks?.total || 0} faixas`, image: value.images?.[0]?.url, kind: category.slice(0, -1) as LibraryItem["kind"] };
+        return { id: value.id, uri: value.uri, name: value.name, subtitle: category === "artists" ? "Artista" : category === "albums" ? value.artists.map((a: any) => a.name).join(", ") : `${value.items?.total ?? value.tracks?.total ?? 0} faixas`, image: value.images?.[0]?.url, kind: category.slice(0, -1) as LibraryItem["kind"] };
       });
       setLibrary(current => ({ ...current, [category]: items }));
     } catch (reason) { fail(reason); }
@@ -135,15 +135,15 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     if (demo) return demoTracks.map(mapTrack);
     try {
       if (item.kind === "playlist") {
-        const data = await spotifyApi<any>(`/playlists/${item.id}/tracks?limit=50`);
-        return (data.items || []).map((entry: any) => entry.track).filter(Boolean).map(mapTrack);
+        const data = await spotifyApi<any>(`/playlists/${item.id}/items?limit=50`);
+        return (data.items || []).map((entry: any) => entry.item || entry.track).filter((entry: any) => entry?.type !== "episode").map(mapTrack);
       }
       if (item.kind === "album") {
         const data = await spotifyApi<any>(`/albums/${item.id}/tracks?limit=50`);
         return (data.items || []).map((track: any) => mapTrack({ ...track, album: { id: item.id, name: item.name, images: item.image ? [{ url: item.image }] : [] } }));
       }
-      const data = await spotifyApi<any>(`/artists/${item.id}/top-tracks?market=from_token`);
-      return (data.tracks || []).map(mapTrack);
+      const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(`artist:${item.name}`)}&type=track&limit=10`);
+      return (data.tracks?.items || []).map(mapTrack);
     } catch (reason) {
       fail(reason);
       return [];
@@ -157,7 +157,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       return { playlists: [], albums: [], artists: [], tracks: matches };
     }
     const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(query)}&type=track,artist,album,playlist&limit=8`);
-    const basic = (value: any, kind: LibraryItem["kind"]): LibraryItem => ({ id: value.id, uri: value.uri, name: value.name, subtitle: kind === "artist" ? "Artista" : kind === "playlist" ? `${value.tracks?.total || 0} faixas` : value.artists?.map((a: any) => a.name).join(", ") || "Spotify", image: value.images?.[0]?.url, kind });
+    const basic = (value: any, kind: LibraryItem["kind"]): LibraryItem => ({ id: value.id, uri: value.uri, name: value.name, subtitle: kind === "artist" ? "Artista" : kind === "playlist" ? `${value.items?.total ?? value.tracks?.total ?? 0} faixas` : value.artists?.map((a: any) => a.name).join(", ") || "Spotify", image: value.images?.[0]?.url, kind });
     return { tracks: data.tracks.items.map(mapTrack), artists: data.artists.items.map((x: any) => basic(x, "artist")), albums: data.albums.items.map((x: any) => basic(x, "album")), playlists: data.playlists.items.filter(Boolean).map((x: any) => basic(x, "playlist")) };
   }, [demo]);
 
