@@ -57,7 +57,7 @@ function Shelf({
 }
 
 export function LibraryShowcase() {
-  const { library, loadLibrary, playItem, search, profile, demo } = useSpotifyAuth();
+  const { library, loadLibrary, playItem, search, profile, demo, playback } = useSpotifyAuth();
   const [loading, setLoading] = useState(true);
   const [discover, setDiscover] = useState<LibraryItem[]>([]);
 
@@ -96,5 +96,26 @@ export function LibraryShowcase() {
     <Shelf title="Playlists" items={library.playlists} loading={loading} onPlay={item => { void playItem(item); }} />
     {(!premium || (!library.albums.length && !library.playlists.length)) &&
       <Shelf title="Descubra no Spotify" items={discover.length ? discover : publicDiscovery} loading={false} onPlay={openDiscovery} />}
+    <section className={`led-equalizer ${playback.isPlaying ? "is-playing" : ""}`} aria-label={playback.isPlaying ? "Equalizador visual animado" : "Equalizador visual em espera"}>
+      <div className="led-equalizer-head">
+        <span>VISUAL SIGNAL</span>
+        <i>{playback.isPlaying ? "LIVE" : "STANDBY"}</i>
+      </div>
+      <div className="led-bars" aria-hidden="true">
+        {[8,5,7,9,6,5,8,7,6,4,7,5].map((height, index) =>
+          <span
+            className="led-column"
+            key={index}
+            style={{
+              "--led-height": height,
+              "--led-delay": `${-(index * 0.09)}s`,
+              "--led-speed": `${0.58 + (index % 5) * 0.11}s`,
+            } as React.CSSProperties}
+          >
+            {Array.from({ length: 9 }, (_, led) => <i key={led} />)}
+          </span>
+        )}
+      </div>
+    </section>
   </aside>;
 }

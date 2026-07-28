@@ -748,6 +748,84 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
     background-size:220% 100%;
     animation:showcaseShimmer 1.2s linear infinite;
   }
+  .led-equalizer {
+    position:relative;
+    min-height:88px;
+    margin-top:auto;
+    padding:10px 12px 11px;
+    overflow:hidden;
+    border:1px solid rgba(177,108,54,.2);
+    border-radius:7px;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.025),transparent 24%),
+      repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,255,255,.012) 6px 7px),
+      #050505;
+    box-shadow:inset 0 0 22px #000,0 7px 16px rgba(0,0,0,.3);
+  }
+  .led-equalizer::after {
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(90deg,transparent,rgba(255,158,63,.035),transparent);
+  }
+  .led-equalizer-head {
+    position:relative;
+    z-index:2;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:7px;
+    color:#725f51;
+    font-size:6px;
+    font-weight:800;
+    letter-spacing:.18em;
+  }
+  .led-equalizer-head i {
+    color:#675a50;
+    font-style:normal;
+  }
+  .led-equalizer.is-playing .led-equalizer-head i {
+    color:#ff9a3d;
+    text-shadow:0 0 8px rgba(255,132,40,.75);
+  }
+  .led-bars {
+    position:relative;
+    z-index:1;
+    display:flex;
+    height:55px;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:clamp(2px,.5cqw,5px);
+  }
+  .led-column {
+    --active-leds:2;
+    display:flex;
+    width:100%;
+    height:55px;
+    flex-direction:column-reverse;
+    justify-content:space-between;
+    filter:saturate(.75);
+    opacity:.42;
+  }
+  .led-column i {
+    width:100%;
+    height:4px;
+    border-radius:1px;
+    background:#10100f;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.018);
+  }
+  .led-column i:nth-child(-n+3) { background:#173f82;box-shadow:0 0 4px rgba(27,86,185,.4); }
+  .led-column i:nth-child(n+4):nth-child(-n+6) { background:#b18a21;box-shadow:0 0 4px rgba(223,173,35,.38); }
+  .led-column i:nth-child(7) { background:#c56618;box-shadow:0 0 4px rgba(238,111,23,.42); }
+  .led-column i:nth-child(n+8) { background:#a51d20;box-shadow:0 0 5px rgba(222,30,35,.42); }
+  .led-equalizer.is-playing .led-column {
+    animation:ledLevel var(--led-speed) steps(5,end) infinite alternate;
+    animation-delay:var(--led-delay);
+    filter:saturate(1.25) brightness(1.12);
+    opacity:1;
+  }
+  .led-equalizer.is-playing .led-column i { opacity:1; }
 }
 
 @container (max-aspect-ratio: 1.32 / 1) {
@@ -756,3 +834,9 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 }
 
 @keyframes showcaseShimmer { to { background-position:-220% 0; } }
+@keyframes ledLevel {
+  0% { clip-path:inset(60% 0 0);transform:scaleY(.55);transform-origin:bottom; }
+  35% { clip-path:inset(18% 0 0);transform:scaleY(.92);transform-origin:bottom; }
+  65% { clip-path:inset(42% 0 0);transform:scaleY(.7);transform-origin:bottom; }
+  100% { clip-path:inset(0);transform:scaleY(1);transform-origin:bottom; }
+}
