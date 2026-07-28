@@ -7,6 +7,7 @@ export function Tonearm({ position, duration, trackId, playing }: { position: nu
   const [changingTrack, setChangingTrack] = useState(false);
   const hasTrack = Boolean(trackId);
   const ended = hasTrack && duration > 0 && position >= duration - 750;
+  const waitingToStart = hasTrack && !playing && position < 500;
 
   useEffect(() => {
     const previous = previousTrack.current;
@@ -17,7 +18,7 @@ export function Tonearm({ position, duration, trackId, playing }: { position: nu
     return () => clearTimeout(timer);
   }, [trackId]);
 
-  const returning = !hasTrack || ended || changingTrack;
+  const returning = !hasTrack || ended || changingTrack || waitingToStart;
   const angle = useTonearmProgress(position, duration, hasTrack, returning);
   const stateClass = returning ? "tonearm--returning" : playing ? "tonearm--playing" : "tonearm--paused";
 
