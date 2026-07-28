@@ -313,14 +313,21 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 .legal-page a { display:inline-block; margin-top:24px; color:#d8a06f; }
 @media(max-width:600px) { .legal-page article { padding:27px 20px; } .legal-page h1 { font-size:38px; } }
 
-/* Mizer Mixer — a imagem aprovada forma a carcaça; os controles reais ficam por cima. */
+/* Mizer Mixer em camadas independentes: carcaça, vinil e braço. */
 .vinyl-motion { position:absolute;inset:0;border-radius:50%;will-change:transform; }
+.vinyl-layer-image { display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none; }
+.tonearm-layer-image {
+  position:absolute;left:52%;top:9.7%;width:34.6%;height:49.1%;object-fit:fill;
+  transform-origin:83% 15.7%;transition:transform .82s cubic-bezier(.4,0,.2,1);
+  will-change:transform;pointer-events:none;user-select:none;
+}
+.tonearm--returning .tonearm-layer-image { transition-duration:1.15s;transition-timing-function:cubic-bezier(.22,.61,.36,1); }
 
 @media(min-width:901px) {
   html,body { width:100%;height:100%;overflow:hidden; }
   .app-shell {
     position:relative;display:block;width:100vw;height:100vh;min-height:620px;overflow:hidden;
-    background:#090806 url('/mizer-guide-skin.png') center/100% 100% no-repeat;
+    background:#090806 url('/mizer-base-clean.png') center/100% 100% no-repeat;
   }
   .app-shell::before { content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:rgba(0,0,0,.025); }
   .mobile-menu,.sidebar-backdrop { display:none!important; }
@@ -356,49 +363,23 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   .deck::before,.wood-grain,.platter-dots { display:none; }
   .platter {
     position:absolute;left:5.25%;top:2.8%;width:74.5%;height:80.2%;aspect-ratio:auto;
-    display:grid;place-items:center;overflow:hidden;transform:none;
+    display:grid;place-items:center;overflow:visible;transform:none;
     border-radius:50%;background:transparent;box-shadow:none;pointer-events:none;
   }
   .vinyl-perspective {
-    position:absolute;inset:0;display:grid;place-items:center;overflow:hidden;
-    border-radius:50%;box-shadow:none;
+    position:absolute;left:0;top:50%;width:100%;height:auto;aspect-ratio:1;
+    display:grid;place-items:center;overflow:visible;transform:translateY(-50%) scaleY(.70);
+    transform-origin:50% 50%;border-radius:50%;box-shadow:none;
   }
   .vinyl {
     position:relative;inset:auto;width:100%;height:100%;display:grid;place-items:center;
-    overflow:hidden;border-radius:50%;transform:none!important;
+    overflow:visible;border-radius:50%;transform:none!important;
     background:transparent;box-shadow:none;
   }
-  .vinyl::after,.record-grooves,.spindle-hole { display:none; }
-  .vinyl-shine {
-    display:block;position:absolute;left:-8%;top:-8%;width:116%;height:116%;inset:auto;
-    border:0;border-radius:50%;opacity:0;transform-origin:50% 50%;
-    background:conic-gradient(from 8deg,
-      transparent 0 12%,
-      rgba(255,255,255,.075) 17%,
-      rgba(255,255,255,.018) 23%,
-      transparent 29% 58%,
-      rgba(195,128,79,.055) 65%,
-      transparent 73% 100%);
-    mix-blend-mode:screen;will-change:transform,opacity;
-  }
-  .record-label {
-    position:absolute;left:32.25%;top:26%;width:35.5%;height:48%;inset:auto;
-    display:block;overflow:visible;border:0;border-radius:50%;
-    background:transparent;box-shadow:none;pointer-events:none;
-  }
-  .record-label span,.record-label i,.record-label small { display:none; }
-  .record-label::before {
-    content:"";position:absolute;left:50%;top:10%;width:4px;height:12px;margin-left:-2px;
-    border-radius:999px;background:rgba(255,239,215,.62);
-    box-shadow:0 0 5px rgba(255,210,160,.22);
-  }
-  .vinyl--spinning .vinyl-shine { opacity:.72;box-shadow:none; }
+  .vinyl::after,.record-grooves,.spindle-hole,.vinyl-shine,.record-label { display:none; }
 
   .tonearm-assembly { position:absolute;inset:0;width:100%;height:100%;z-index:12;filter:none;pointer-events:none; }
-  .tonearm-svg { position:absolute;inset:0;width:100%;height:100%;transform:none!important;overflow:visible; }
-  .tonearm-moving { transform-box:view-box;transform-origin:858px 106px;transition:transform .72s linear;will-change:transform; }
-  .tonearm--returning .tonearm-moving { transition-duration:1.05s;transition-timing-function:cubic-bezier(.22,.61,.36,1); }
-  .tonearm--playing .stylus-tip { filter:drop-shadow(0 0 4px rgba(255,193,118,.78)); }
+  .tonearm--playing .tonearm-layer-image { filter:drop-shadow(0 0 3px rgba(255,193,118,.18)); }
 
   .deck-controls { position:absolute;inset:0;width:auto;height:auto;display:block;pointer-events:none; }
   .power-knob {
@@ -458,8 +439,7 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 @media(max-width:900px) {
   .vinyl-motion { position:absolute;inset:0; }
   .tonearm-assembly { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
-  .tonearm-svg { position:absolute;inset:0;width:100%;height:100%;transform:none!important;overflow:visible; }
-  .tonearm-moving { transform-box:view-box;transform-origin:858px 106px;transition:transform .72s linear; }
+  .tonearm-layer-image { left:52%;top:5%;width:43%;height:72%; }
 }
 
 @media(prefers-reduced-motion:reduce) {
