@@ -24,7 +24,6 @@ export function Turntable() {
         title={targetLightOn ? "Apagar luz do prato" : "Acender luz do prato"}
       >
         <span className="target-light-stem"><i /></span>
-        <span className="target-light-base" />
       </button>
       <div className="platter"><div className="platter-dots" /><Vinyl
         playing={playback.isPlaying}
