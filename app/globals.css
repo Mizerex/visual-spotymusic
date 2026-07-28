@@ -80,6 +80,9 @@ button:focus-visible, input:focus-visible { outline:2px solid var(--amber); outl
 .library-empty { padding:35px 22px;text-align:center;color:#61584e;font-size:11px; }.library-empty span { font-size:27px;color:#6f5036; }
 .search-status { margin:0;padding:36px 22px;text-align:center;color:#9a8977;font-size:11px;line-height:1.5; }
 .search-status-error { color:#cf8c66; }
+.search-status p { margin:0 0 12px; }
+.search-status a { display:inline-flex;justify-content:center;padding:9px 12px;border:1px solid #805333;border-radius:4px;color:#e1b084;text-decoration:none;background:#25170f; }
+.search-status a:hover { border-color:#c1814e;background:#332014; }
 .library-detail { padding:10px; }
 .detail-back { border:0;background:none;color:#b9987c;cursor:pointer;padding:8px 4px;font-size:11px; }
 .detail-hero { display:flex;gap:11px;align-items:center;padding:10px 4px 14px; }

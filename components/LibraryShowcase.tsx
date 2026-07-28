@@ -4,6 +4,22 @@ import { useEffect, useState } from "react";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 import type { LibraryItem } from "@/types/spotify";
 
+const publicDiscovery: LibraryItem[] = [
+  ["Top Brasil", "O que está em alta"],
+  ["Sertanejo", "Descubra artistas"],
+  ["Rock Brasil", "Clássicos e novidades"],
+  ["Pop Brasil", "Sucessos brasileiros"],
+  ["MPB", "Vozes do Brasil"],
+  ["Viral Brasil", "Músicas em destaque"],
+].map(([name, subtitle], index) => ({
+  id: `public-${index}`,
+  uri: "",
+  name,
+  subtitle,
+  kind: "playlist" as const,
+  externalUrl: `https://open.spotify.com/search/${encodeURIComponent(name)}`,
+}));
+
 function Shelf({
   title,
   items,
@@ -60,6 +76,10 @@ export function LibraryShowcase() {
 
   const premium = demo || profile?.product === "premium";
   const openDiscovery = (item: LibraryItem) => {
+    if (item.externalUrl) {
+      window.open(item.externalUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
     if (premium) {
       void playItem(item);
       return;
@@ -75,6 +95,6 @@ export function LibraryShowcase() {
     <Shelf title="Álbuns" items={library.albums} loading={loading} onPlay={item => { void playItem(item); }} />
     <Shelf title="Playlists" items={library.playlists} loading={loading} onPlay={item => { void playItem(item); }} />
     {(!premium || (!library.albums.length && !library.playlists.length)) &&
-      <Shelf title="Descubra no Spotify" items={discover} loading={loading} onPlay={openDiscovery} />}
+      <Shelf title="Descubra no Spotify" items={discover.length ? discover : publicDiscovery} loading={false} onPlay={openDiscovery} />}
   </aside>;
 }

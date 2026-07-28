@@ -18,6 +18,7 @@ export type LibraryItem = {
   name: string;
   subtitle: string;
   image?: string;
+  externalUrl?: string;
   kind: "track" | "album" | "artist" | "playlist";
   track?: SpotifyTrack;
 };
