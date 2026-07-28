@@ -24,8 +24,14 @@ export function Tonearm({ position, duration, trackId, playing }: { position: nu
 
   return <div className={`tonearm-assembly ${stateClass}`} data-progress={duration > 0 ? Math.round((position / duration) * 100) : 0}>
     <img
+      className="tonearm-base-layer"
+      src="/mizer-black-tonearm-base.png"
+      alt=""
+      draggable={false}
+    />
+    <img
       className="tonearm-layer-image"
-      src="/mizer-tonearm-new.png"
+      src="/mizer-black-tonearm-moving.png"
       alt=""
       draggable={false}
       style={{ transform: `rotate(${angle}deg)` }}

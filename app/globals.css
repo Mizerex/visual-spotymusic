@@ -445,3 +445,101 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 @media(prefers-reduced-motion:reduce) {
   .vinyl-motion { transform:none!important; }
 }
+
+/* Toca-discos quadrado em camadas independentes. */
+.turntable-section {
+  background:radial-gradient(circle at 50% 45%,#12100d,#070605 74%);
+}
+.deck {
+  aspect-ratio:1;
+  border:5px solid #100c09;
+  border-radius:7px;
+  background:#21160f url("/mizer-square-turntable-base.png") center/100% 100% no-repeat;
+  box-shadow:0 22px 46px rgba(0,0,0,.78),inset 0 0 0 1px rgba(165,111,73,.2);
+}
+.wood-grain,.platter-dots { display:none; }
+.platter {
+  left:3%;
+  top:12.1%;
+  width:72.5%;
+  height:auto;
+  aspect-ratio:1;
+  background:transparent;
+  box-shadow:none;
+  transform:none;
+}
+.vinyl-perspective {
+  left:50%;
+  top:50%;
+  width:88%;
+  height:auto;
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  box-shadow:0 8px 14px rgba(0,0,0,.68);
+}
+.tonearm-base-layer,.tonearm-layer-image {
+  left:71%;
+  top:0;
+  width:25%;
+  height:auto;
+}
+.tonearm-base-layer {
+  position:absolute;
+  z-index:1;
+  object-fit:contain;
+  pointer-events:none;
+  user-select:none;
+}
+.tonearm-layer-image {
+  z-index:2;
+  transform-origin:50% 25%;
+}
+
+@media(min-width:901px) {
+  .deck {
+    inset:auto;
+    left:50%;
+    top:50%;
+    width:auto;
+    height:96%;
+    max-width:94%;
+    transform:translate(-50%,-50%);
+  }
+  .deck::before { display:none; }
+  .vinyl-perspective {
+    left:50%;
+    top:50%;
+    width:88%;
+    transform:translate(-50%,-50%);
+  }
+  .power-knob {
+    left:5.7%;
+    bottom:11.3%;
+    width:8%;
+    height:8%;
+    opacity:.08;
+  }
+  .rpm-switch {
+    right:3.5%;
+    bottom:4%;
+    width:18%;
+  }
+  .rpm-switch button {
+    opacity:.72;
+    border-color:#4c392c;
+    background:rgba(19,14,11,.92);
+  }
+  .rpm-switch button.active {
+    opacity:1;
+    color:#ffc58f;
+    border-color:#9b6538;
+    background:#4a2c1b;
+  }
+}
+
+@media(max-width:900px) {
+  .deck { aspect-ratio:1; }
+  .platter { left:3%;top:12.1%;width:72.5%; }
+  .vinyl-perspective { left:50%;top:50%;width:88%;transform:translate(-50%,-50%); }
+  .tonearm-base-layer,.tonearm-layer-image { left:71%;top:0;width:25%; }
+}
