@@ -27,7 +27,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     try { setDetail({ item, tracks: await loadDetails(item) }); } finally { setDetailLoading(false); }
   };
   return <aside className={`sidebar ${open ? "open" : ""}`}>
-    <header className="brand"><div className="brand-mark"><i /></div><div><strong>VISUAL</strong><span>SPOTYMUSIC</span></div><button className="close-sidebar" onClick={onClose} aria-label="Fechar biblioteca"><Icon name="close" /></button></header>
+    <header className="brand">
+      <img className="brand-logo" src="/visual-spotymusic-logo.png" alt="Visual SpotyMusic" />
+      <button className="close-sidebar" onClick={onClose} aria-label="Fechar biblioteca"><Icon name="close" /></button>
+    </header>
     <nav aria-label="Navegação principal">
       <p className="nav-label">NAVEGAÇÃO</p>
       <button className="nav-item active"><Icon name="home" /> Início</button>
