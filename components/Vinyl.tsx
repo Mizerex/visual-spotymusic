@@ -8,7 +8,7 @@ export function Vinyl({ playing, rpm, album }: { playing: boolean; rpm: 33 | 45;
       data-motion={playing ? "spinning" : "paused"}
       ref={ref}
     >
-      <img className="vinyl-layer-image" src="/mizer-vinyl.png" alt="" draggable={false} />
+      <img className="vinyl-layer-image" src="/mizer-vinyl-new.webp" alt="" draggable={false} />
     </div>
   </div></div>;
 }
