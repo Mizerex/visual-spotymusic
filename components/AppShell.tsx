@@ -1,0 +1,26 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
+import { LoginScreen } from "./LoginScreen";
+import { Sidebar } from "./Sidebar";
+import { Turntable } from "./Turntable";
+import { NowPlaying } from "./NowPlaying";
+import { AnalogPanel } from "./AnalogPanel";
+import { ErrorToast } from "./ErrorToast";
+import { Icon } from "./Icon";
+import { Topbar } from "./Topbar";
+
+export function AppShell() {
+  const { authenticated, ready, toggle } = useSpotifyAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  useEffect(() => { const handler = (event: KeyboardEvent) => { if (event.code === "Space" && !["INPUT", "BUTTON"].includes((event.target as HTMLElement).tagName)) { event.preventDefault(); toggle(); } }; window.addEventListener("keydown", handler); return () => window.removeEventListener("keydown", handler); }, [toggle]);
+  if (!ready) return <main className="loading-screen"><div className="loading-record" /><p>Aquecendo as válvulas...</p></main>;
+  if (!authenticated) return <LoginScreen />;
+  return <div className="app-shell">
+    <button className="mobile-menu" onClick={() => setSidebarOpen(true)} aria-label="Abrir biblioteca"><Icon name="menu" /><span>VISUAL SPOTYMUSIC</span></button>
+    <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    {sidebarOpen && <button className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-label="Fechar biblioteca" />}
+    <main className="studio"><Topbar onMenu={() => setSidebarOpen(true)} /><div className="top-grid"><Turntable /><NowPlaying /></div><AnalogPanel /></main>
+    <ErrorToast />
+  </div>;
+}

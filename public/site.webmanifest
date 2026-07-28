@@ -1,0 +1,9 @@
+{
+  "name": "Visual SpotyMusic",
+  "short_name": "SpotyMusic",
+  "description": "Seu Spotify em uma experiência visual e analógica.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070706",
+  "theme_color": "#16110d"
+}
