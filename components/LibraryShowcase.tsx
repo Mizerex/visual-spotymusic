@@ -41,15 +41,31 @@ function Shelf({
 }
 
 export function LibraryShowcase() {
-  const { library, loadLibrary, playItem } = useSpotifyAuth();
+  const { library, loadLibrary, playItem, search, profile, demo } = useSpotifyAuth();
   const [loading, setLoading] = useState(true);
+  const [discover, setDiscover] = useState<LibraryItem[]>([]);
 
   useEffect(() => {
     let active = true;
-    Promise.all([loadLibrary("albums"), loadLibrary("playlists")])
+    Promise.all([
+      loadLibrary("albums"),
+      loadLibrary("playlists"),
+      demo ? Promise.resolve(null) : search("música brasileira").then(result => {
+        if (active) setDiscover(result.artists.slice(0, 6));
+      }).catch(() => null),
+    ])
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [loadLibrary]);
+  }, [demo, loadLibrary, search]);
+
+  const premium = demo || profile?.product === "premium";
+  const openDiscovery = (item: LibraryItem) => {
+    if (premium) {
+      void playItem(item);
+      return;
+    }
+    window.open(`https://open.spotify.com/${item.kind}/${item.id}`, "_blank", "noopener,noreferrer");
+  };
 
   return <aside className="library-showcase" aria-label="Destaques da sua biblioteca">
     <div className="showcase-title">
@@ -58,5 +74,7 @@ export function LibraryShowcase() {
     </div>
     <Shelf title="Álbuns" items={library.albums} loading={loading} onPlay={item => { void playItem(item); }} />
     <Shelf title="Playlists" items={library.playlists} loading={loading} onPlay={item => { void playItem(item); }} />
+    {(!premium || (!library.albums.length && !library.playlists.length)) &&
+      <Shelf title="Descubra no Spotify" items={discover} loading={loading} onPlay={openDiscovery} />}
   </aside>;
 }

@@ -7,7 +7,7 @@ import { loadSpotifySdk } from "@/services/spotifyPlayer";
 import { tokenManager } from "@/services/tokenManager";
 import type { LibraryItem, PlaybackSnapshot, SpotifyPlayer, SpotifyTrack } from "@/types/spotify";
 
-type Profile = { display_name?: string; product?: string; images?: { url: string }[] };
+type Profile = { display_name?: string; product?: string; country?: string; images?: { url: string }[] };
 type Category = "playlists" | "albums" | "artists" | "tracks";
 
 type SpotifyContextValue = {
@@ -165,15 +165,22 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   }, [demo, fail]);
 
   const search = useCallback(async (query: string) => {
-    if (!query.trim()) return { playlists: [], albums: [], artists: [], tracks: [] };
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) return { playlists: [], albums: [], artists: [], tracks: [] };
     if (demo) {
-      const matches = demoTracks.filter(t => `${t.name} ${t.artists[0].name}`.toLowerCase().includes(query.toLowerCase())).map(mapTrack);
+      const matches = demoTracks.filter(t => `${t.name} ${t.artists[0].name}`.toLowerCase().includes(normalizedQuery.toLowerCase())).map(mapTrack);
       return { playlists: [], albums: [], artists: [], tracks: matches };
     }
-    const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(query)}&type=track,artist,album,playlist&limit=8`);
+    const market = /^[A-Z]{2}$/.test(profile?.country || "") ? profile!.country : "BR";
+    const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(normalizedQuery)}&type=artist,track,album,playlist&market=${market}&limit=10`);
     const basic = (value: any, kind: LibraryItem["kind"]): LibraryItem => ({ id: value.id, uri: value.uri, name: value.name, subtitle: kind === "artist" ? "Artista" : kind === "playlist" ? `${value.items?.total ?? value.tracks?.total ?? 0} faixas` : value.artists?.map((a: any) => a.name).join(", ") || "Spotify", image: value.images?.[0]?.url, kind });
-    return { tracks: data.tracks.items.map(mapTrack), artists: data.artists.items.map((x: any) => basic(x, "artist")), albums: data.albums.items.map((x: any) => basic(x, "album")), playlists: data.playlists.items.filter(Boolean).map((x: any) => basic(x, "playlist")) };
-  }, [demo]);
+    return {
+      artists: (data.artists?.items || []).filter(Boolean).map((x: any) => basic(x, "artist")),
+      tracks: (data.tracks?.items || []).filter(Boolean).map(mapTrack),
+      albums: (data.albums?.items || []).filter(Boolean).map((x: any) => basic(x, "album")),
+      playlists: (data.playlists?.items || []).filter(Boolean).map((x: any) => basic(x, "playlist")),
+    };
+  }, [demo, profile?.country]);
 
   const activateDevice = useCallback(async () => {
     try {

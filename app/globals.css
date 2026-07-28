@@ -78,6 +78,8 @@ button:focus-visible, input:focus-visible { outline:2px solid var(--amber); outl
 .library-copy strong { font-size:12px;font-weight:600; }.library-copy small { color:#766d62;font-size:9px;margin-top:4px; }
 .row-play { opacity:0;color:#d49359;font-size:10px; }.library-item:hover .row-play,.library-item.selected .row-play { opacity:1; }
 .library-empty { padding:35px 22px;text-align:center;color:#61584e;font-size:11px; }.library-empty span { font-size:27px;color:#6f5036; }
+.search-status { margin:0;padding:36px 22px;text-align:center;color:#9a8977;font-size:11px;line-height:1.5; }
+.search-status-error { color:#cf8c66; }
 .library-detail { padding:10px; }
 .detail-back { border:0;background:none;color:#b9987c;cursor:pointer;padding:8px 4px;font-size:11px; }
 .detail-hero { display:flex;gap:11px;align-items:center;padding:10px 4px 14px; }

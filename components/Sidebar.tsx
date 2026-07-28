@@ -16,10 +16,40 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   const [active, setActive] = useState<(typeof categories)[number]["id"]>("playlists");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Record<string, LibraryItem[]> | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
   const [detail, setDetail] = useState<{ item: LibraryItem; tracks: LibraryItem[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   useEffect(() => { loadLibrary(active); }, [active, loadLibrary]);
-  useEffect(() => { const timer = setTimeout(() => { if (query.trim()) search(query).then(setResults).catch(() => setResults(null)); else setResults(null); }, 350); return () => clearTimeout(timer); }, [query, search]);
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      const value = query.trim();
+      if (!value) {
+        setResults(null);
+        setSearchError("");
+        setSearchLoading(false);
+        return;
+      }
+      setSearchLoading(true);
+      setSearchError("");
+      try {
+        const found = await search(value);
+        if (!cancelled) setResults(found);
+      } catch (reason) {
+        if (!cancelled) {
+          setResults({ playlists: [], albums: [], artists: [], tracks: [] });
+          setSearchError(reason instanceof Error ? reason.message : "Não foi possível pesquisar no Spotify.");
+        }
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    }, 450);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query, search]);
   const searchItems = results ? Object.values(results).flat() : null;
   const openItem = async (item: LibraryItem) => {
     if (item.kind === "track") { await playItem(item); return; }
@@ -44,7 +74,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       <div className="detail-hero">{detail.item.image ? <img src={detail.item.image} alt="" /> : <span>♫</span>}<div><small>{detail.item.kind.toUpperCase()}</small><strong>{detail.item.name}</strong><p>{detail.item.subtitle}</p></div></div>
       <button className="detail-play" onClick={() => playItem(detail.item)}>▶ Reproduzir</button>
       {detailLoading ? <p className="detail-loading">Carregando faixas…</p> : <LibraryList items={detail.tracks} selected={playback.track?.id} onPlay={playItem} emptyText="O Spotify não liberou a lista, mas Reproduzir ainda pode tocar a coleção." />}
-    </div> : <LibraryList items={searchItems || library[active]} selected={playback.track?.id} onPlay={item => { void openItem(item); }} emptyText={query ? "Nenhum resultado para esta busca." : "Sua biblioteca aparecerá aqui."} />}</div>
+    </div> : searchLoading ? <p className="search-status">Pesquisando no Spotify…</p>
+      : searchError ? <p className="search-status search-status-error">{searchError}</p>
+        : <LibraryList items={searchItems || library[active]} selected={playback.track?.id} onPlay={item => { void openItem(item); }} emptyText={query ? `Nenhum resultado para “${query.trim()}”.` : "Sua biblioteca aparecerá aqui."} />}</div>
     <footer className="profile"><span className="avatar">{profile?.display_name?.slice(0, 1).toUpperCase() || "V"}</span><span><strong>{profile?.display_name || "Visual Listener"}</strong><small>{demo ? "Modo demonstração" : playerReady ? "Toca-discos online" : "Conectando ao Spotify"}</small></span><button onClick={logout} aria-label="Desconectar do Spotify"><Icon name="logout" /></button></footer>
   </aside>;
 }

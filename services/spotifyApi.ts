@@ -16,7 +16,18 @@ export async function spotifyApi<T>(path: string, init: RequestInit = {}, retry 
     return spotifyApi<T>(path, init, false);
   }
   if (!response.ok) {
-    const message = response.status === 403 ? "Este recurso exige uma conta Spotify Premium." : response.status === 404 ? "Nenhum dispositivo de reprodução foi encontrado." : "O Spotify não conseguiu concluir esta ação.";
+    let reason = "";
+    try {
+      const payload = await response.clone().json();
+      reason = payload?.error?.message || payload?.message || "";
+    } catch { /* A resposta pode não ser JSON. */ }
+    const message = response.status === 403
+      ? "O Spotify não autorizou esta busca para a conta conectada."
+      : response.status === 404
+        ? "Nenhum dispositivo de reprodução foi encontrado."
+        : response.status === 429
+          ? "O limite temporário de consultas do Spotify foi atingido. Aguarde um momento."
+          : reason || "O Spotify não conseguiu concluir esta ação.";
     throw new Error(message);
   }
   if (response.status === 204) return undefined as T;
