@@ -468,7 +468,15 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   .meters { position:absolute;left:3.7%;top:18%;width:25.2%;height:64%;display:grid;grid-template-columns:1fr 1fr;gap:11%; }
   .vu-meter { height:100%;border:0;background:transparent;box-shadow:none;color:transparent;overflow:hidden; }
   .vu-scale,.vu-ticks,.vu-meter b,.vu-meter small { visibility:hidden; }
-  .vu-needle { height:78%;bottom:-16%;width:2px;background:#1b130b;opacity:.92; }
+  .vu-needle {
+    height:66%;
+    bottom:13%;
+    width:2px;
+    background:#1b130b;
+    opacity:.92;
+    transform-origin:50% 100%;
+    clip-path:inset(0 0 3px 0);
+  }
   .tone-controls { position:absolute;left:38.2%;top:12%;width:38.7%;height:76%;display:grid;grid-template-columns:repeat(4,1fr);gap:8%; }
   .knob-control { height:100%;display:grid;place-items:center;align-content:center; }
   .knob-control strong,.knob-control small { visibility:hidden; }
