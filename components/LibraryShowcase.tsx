@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 import type { LibraryItem } from "@/types/spotify";
-import { LibraryAdvertising } from "./LibraryAdvertising";
 
 function Shelf({
   title,
@@ -59,6 +58,5 @@ export function LibraryShowcase() {
     </div>
     <Shelf title="Álbuns" items={library.albums} loading={loading} onPlay={item => { void playItem(item); }} />
     <Shelf title="Playlists" items={library.playlists} loading={loading} onPlay={item => { void playItem(item); }} />
-    <LibraryAdvertising />
   </aside>;
 }
