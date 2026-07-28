@@ -355,29 +355,44 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   }
   .deck::before,.wood-grain,.platter-dots { display:none; }
   .platter {
-    position:absolute;left:42.25%;top:46.65%;width:63.2%;aspect-ratio:1;
-    transform:translate(-50%,-50%) scaleY(.775) rotate(-.18deg);
-    transform-origin:center;border-radius:50%;background:transparent;box-shadow:none;
+    position:absolute;left:5.25%;top:2.8%;width:74.5%;height:80.2%;aspect-ratio:auto;
+    display:grid;place-items:center;overflow:hidden;transform:none;
+    border-radius:50%;background:transparent;box-shadow:none;pointer-events:none;
   }
-  .vinyl-perspective { position:absolute;inset:2.5%;border-radius:50%;box-shadow:none; }
+  .vinyl-perspective {
+    position:absolute;inset:0;display:grid;place-items:center;overflow:hidden;
+    border-radius:50%;box-shadow:none;
+  }
   .vinyl {
-    position:absolute;inset:0;border-radius:50%;transform:none!important;
-    background:
-      radial-gradient(circle at 34% 74%,rgba(255,255,255,.055),transparent 18%),
-      radial-gradient(circle at 72% 22%,rgba(255,255,255,.042),transparent 17%),
-      repeating-radial-gradient(circle,#070707 0 1.05px,#141414 1.45px 2.95px,#090909 3.25px 4.9px);
-    box-shadow:inset 0 0 82px rgba(0,0,0,.95),0 11px 18px rgba(0,0,0,.32);
+    position:relative;inset:auto;width:100%;height:100%;display:grid;place-items:center;
+    overflow:hidden;border-radius:50%;transform:none!important;
+    background:transparent;box-shadow:none;
   }
-  .vinyl::after { background:conic-gradient(from 202deg,transparent 0 20%,rgba(255,255,255,.10) 28%,transparent 35%,transparent 68%,rgba(173,116,76,.11) 76%,transparent 84%); }
-  .vinyl-shine { inset:0;border:0;background:linear-gradient(118deg,transparent 38%,rgba(255,255,255,.095) 47%,rgba(255,255,255,.025) 54%,transparent 62%); }
-  .record-grooves { inset:2%;opacity:.52;background:repeating-radial-gradient(circle,transparent 0 7px,rgba(255,255,255,.045) 8px 9px,transparent 10px 14px); }
+  .vinyl::after,.record-grooves,.spindle-hole { display:none; }
+  .vinyl-shine {
+    display:block;position:absolute;left:-8%;top:-8%;width:116%;height:116%;inset:auto;
+    border:0;border-radius:50%;opacity:0;transform-origin:50% 50%;
+    background:conic-gradient(from 8deg,
+      transparent 0 12%,
+      rgba(255,255,255,.075) 17%,
+      rgba(255,255,255,.018) 23%,
+      transparent 29% 58%,
+      rgba(195,128,79,.055) 65%,
+      transparent 73% 100%);
+    mix-blend-mode:screen;will-change:transform,opacity;
+  }
   .record-label {
-    inset:38.7%;background:radial-gradient(circle,#cc7469 0 67%,#f3d5cf 68% 70%,#a64d46 71% 100%);
-    box-shadow:0 0 0 1px rgba(240,220,209,.24),inset 0 0 18px rgba(75,33,28,.24);
+    position:absolute;left:32.25%;top:26%;width:35.5%;height:48%;inset:auto;
+    display:block;overflow:visible;border:0;border-radius:50%;
+    background:transparent;box-shadow:none;pointer-events:none;
   }
-  .record-label span { color:#f6dfc6;font-size:clamp(8px,.9vw,13px); }
-  .record-label small { max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#6b3a33; }
-  .vinyl--spinning .vinyl-shine { box-shadow:none; }
+  .record-label span,.record-label i,.record-label small { display:none; }
+  .record-label::before {
+    content:"";position:absolute;left:50%;top:10%;width:4px;height:12px;margin-left:-2px;
+    border-radius:999px;background:rgba(255,239,215,.62);
+    box-shadow:0 0 5px rgba(255,210,160,.22);
+  }
+  .vinyl--spinning .vinyl-shine { opacity:.72;box-shadow:none; }
 
   .tonearm-assembly { position:absolute;inset:0;width:100%;height:100%;z-index:12;filter:none;pointer-events:none; }
   .tonearm-svg { position:absolute;inset:0;width:100%;height:100%;transform:none!important;overflow:visible; }
@@ -438,7 +453,6 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   .studio-topbar,.turntable-section,.analog-panel { left:220px; }
   .studio-topbar,.turntable-section { right:300px; }
   .now-playing { width:300px;min-width:300px; }
-  .platter { width:66%;left:43%; }
 }
 
 @media(max-width:900px) {
