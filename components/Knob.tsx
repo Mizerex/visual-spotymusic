@@ -1,9 +1,25 @@
 "use client";
 import { useRef, useState } from "react";
-export function Knob({ label, initial = 50, min = 0, max = 100, suffix = "" }: { label: string; initial?: number; min?: number; max?: number; suffix?: string }) {
-  const [value, setValue] = useState(initial);
+
+type KnobProps = {
+  label: string;
+  initial?: number;
+  min?: number;
+  max?: number;
+  suffix?: string;
+  value?: number;
+  onChange?: (value: number) => void;
+};
+
+export function Knob({ label, initial = 50, min = 0, max = 100, suffix = "", value: controlledValue, onChange }: KnobProps) {
+  const [internalValue, setInternalValue] = useState(initial);
+  const value = controlledValue ?? internalValue;
   const origin = useRef({ y: 0, value: initial });
-  const update = (next: number) => setValue(Math.max(min, Math.min(max, Math.round(next))));
+  const update = (next: number) => {
+    const safeValue = Math.max(min, Math.min(max, Math.round(next)));
+    if (controlledValue === undefined) setInternalValue(safeValue);
+    onChange?.(safeValue);
+  };
   const pointerDown = (event: React.PointerEvent) => { origin.current = { y: event.clientY, value }; event.currentTarget.setPointerCapture(event.pointerId); };
   const pointerMove = (event: React.PointerEvent) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) update(origin.current.value + (origin.current.y - event.clientY) * (max - min) / 120); };
   const degrees = -135 + (value - min) / (max - min) * 270;
