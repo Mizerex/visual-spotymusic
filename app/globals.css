@@ -19,12 +19,16 @@ button:focus-visible, input:focus-visible { outline:2px solid var(--amber); outl
 .login-card h1 span { color:#c88447; }
 .tagline { font:24px/1.3 "Libre Caslon Display",serif; color:#d8c7a8; }
 .login-copy { color:#988b79; font-size:14px; line-height:1.7; margin:24px auto 28px; max-width:450px; }
+.login-benefits { display:grid; gap:9px; margin:0 0 25px; padding:0; list-style:none; color:#b7a895; text-align:left; font-size:12px; }
+.login-benefits li { display:flex; align-items:center; gap:9px; }
+.login-benefits span { width:19px; height:19px; flex:0 0 19px; display:grid; place-items:center; border:1px solid rgba(223,155,81,.45); border-radius:50%; color:#df9b51; font-size:10px; }
 .spotify-button,.demo-button { width:100%; min-height:52px; border-radius:2px; cursor:pointer; font-weight:700; letter-spacing:.04em; }
 .spotify-button { border:1px solid #df9b51; background:linear-gradient(#bd7f43,#8d5127); box-shadow:inset 0 1px #e6bb86,0 8px 20px #000; }
 .spotify-button:hover { filter:brightness(1.12); }
 .spotify-button span { color:#13100c; margin-right:9px; }
 .demo-button { margin-top:10px; border:1px solid #493a2d; color:#a99b87; background:#17120e; }
 .login-card small { display:block; margin-top:22px; color:#716658; }
+.login-security { margin:10px 0 0; color:#897d6d; font-size:11px; line-height:1.5; }
 .login-error { color:#e0a18e; font-size:13px; }
 .mini-deck { width:120px; height:82px; margin:auto; position:relative; border:5px solid #4a2e1b; border-radius:3px; background:linear-gradient(135deg,#824f2e,#452918); box-shadow:0 8px 20px #000; transform:perspective(180px) rotateX(8deg); }
 .mini-record { width:65px; height:65px; position:absolute; left:10px; top:4px; border-radius:50%; background:repeating-radial-gradient(circle,#121110 0 2px,#252320 3px 4px); animation:spin 2.2s linear infinite; }

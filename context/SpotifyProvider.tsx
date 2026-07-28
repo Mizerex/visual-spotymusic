@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { beginSpotifyLogin } from "@/services/spotifyAuth";
+import { beginSpotifyLogin, refreshSpotifyToken } from "@/services/spotifyAuth";
 import { spotifyApi } from "@/services/spotifyApi";
 import { loadSpotifySdk } from "@/services/spotifyPlayer";
 import { tokenManager } from "@/services/tokenManager";
@@ -50,9 +50,22 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const fail = useCallback((reason: unknown) => setError(reason instanceof Error ? reason.message : "Algo deu errado. Tente novamente."), []);
 
   useEffect(() => {
-    const tokens = tokenManager.get();
-    setAuthenticated(Boolean(tokens));
-    setReady(true);
+    let active = true;
+    const restoreSession = async () => {
+      const stored = tokenManager.get();
+      const tokens = tokenManager.valid(stored) ? stored : await refreshSpotifyToken();
+      if (!active) return;
+      setAuthenticated(Boolean(tokens));
+      setReady(true);
+    };
+    restoreSession().catch(() => {
+      tokenManager.clear();
+      if (active) {
+        setAuthenticated(false);
+        setReady(true);
+      }
+    });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {

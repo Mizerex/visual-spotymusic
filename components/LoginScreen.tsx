@@ -13,11 +13,17 @@ export function LoginScreen() {
       <p className="eyebrow">APRESENTAMOS</p>
       <h1><span>Visual</span> SpotyMusic</h1>
       <p className="tagline">Seu Spotify em uma experiência visual e analógica.</p>
-      <p className="login-copy">Entre na sua biblioteca, escolha uma faixa e veja a música ganhar cor, movimento e textura em um toca-discos inspirado nos grandes sistemas hi-fi dos anos 70.</p>
-      <button className="spotify-button" onClick={connect}><span>●</span> Conectar ao Spotify</button>
-      <button className="demo-button" onClick={enterDemo}>Explorar em modo demonstração</button>
+      <p className="login-copy">Entre com a sua própria conta para carregar somente a sua biblioteca, os seus álbuns e as suas playlists. Sua reprodução não é compartilhada com outros visitantes.</p>
+      <ul className="login-benefits" aria-label="Como funciona">
+        <li><span aria-hidden="true">✓</span> Sua conta e sua biblioteca</li>
+        <li><span aria-hidden="true">✓</span> Sessão independente neste dispositivo</li>
+        <li><span aria-hidden="true">✓</span> Autorização feita diretamente pelo Spotify</li>
+      </ul>
+      <button className="spotify-button" onClick={connect}><span aria-hidden="true">●</span> Entrar com meu Spotify</button>
+      <button className="demo-button" onClick={enterDemo}>Ver apenas uma demonstração</button>
       {message && <p className="login-error" role="alert">{message}</p>}
-      <small>Conexão segura via Spotify · Nenhuma senha é armazenada</small>
+      <small>A demonstração não acessa músicas reais. A reprodução completa no navegador exige Spotify Premium.</small>
+      <p className="login-security">Conexão segura via Spotify · O Visual SpotyMusic não recebe nem armazena sua senha.</p>
       <a className="privacy-link" href="/privacy">Privacidade</a>
     </section>
   </main>;
