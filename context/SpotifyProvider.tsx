@@ -12,6 +12,7 @@ type Category = "playlists" | "albums" | "artists" | "tracks";
 
 type SpotifyContextValue = {
   authenticated: boolean; demo: boolean; ready: boolean; playerReady: boolean; profile: Profile | null;
+  authError: string;
   playback: PlaybackSnapshot; deviceId: string; library: Record<Category, LibraryItem[]>;
   login: () => Promise<void>; enterDemo: () => void; logout: () => void;
   loadLibrary: (category: Category) => Promise<void>; loadDetails: (item: LibraryItem) => Promise<LibraryItem[]>; search: (query: string) => Promise<Record<Category, LibraryItem[]>>;
@@ -39,6 +40,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const [demo, setDemo] = useState(false);
   const [ready, setReady] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [authError, setAuthError] = useState("");
   const [playback, setPlayback] = useState(initialPlayback);
   const [deviceId, setDeviceId] = useState("");
   const [library, setLibrary] = useState<Record<Category, LibraryItem[]>>({ playlists: [], albums: [], artists: [], tracks: [] });
@@ -55,7 +57,28 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       const stored = tokenManager.get();
       const tokens = tokenManager.valid(stored) ? stored : await refreshSpotifyToken();
       if (!active) return;
-      setAuthenticated(Boolean(tokens));
+      if (!tokens) {
+        setAuthenticated(false);
+        setReady(true);
+        return;
+      }
+      try {
+        const connectedProfile = await spotifyApi<Profile>("/me");
+        if (!active) return;
+        setProfile(connectedProfile);
+        setAuthenticated(true);
+        setAuthError("");
+      } catch (reason) {
+        tokenManager.clear();
+        if (!active) return;
+        setProfile(null);
+        setAuthenticated(false);
+        setAuthError(
+          reason instanceof Error && reason.message.includes("não autorizou")
+            ? "O login foi concluído, mas o Spotify não liberou esta conta para o aplicativo. Mesmo sendo Premium, ela precisa estar na lista de usuários autorizados do Visual SpotyMusic."
+            : reason instanceof Error ? reason.message : "Não foi possível validar esta conta no Spotify."
+        );
+      }
       setReady(true);
     };
     restoreSession().catch(() => {
@@ -71,7 +94,6 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!authenticated || demo) return;
     let cancelled = false;
-    spotifyApi<Profile>("/me").then(setProfile).catch(fail);
     loadSpotifySdk().then(() => {
       if (cancelled || !window.Spotify) return;
       const player = new window.Spotify.Player({ name: "Visual SpotyMusic", getOAuthToken: cb => cb(tokenManager.get()?.accessToken || ""), volume: playback.volume });
@@ -244,6 +266,6 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   }, [demo, liked, playback.track, fail]);
 
   const playerReady = demo || Boolean(deviceId);
-  const value = useMemo<SpotifyContextValue>(() => ({ authenticated, demo, ready, playerReady, profile, playback, deviceId, library, login: beginSpotifyLogin, enterDemo: () => { setDemo(true); setAuthenticated(true); setProfile({ display_name: "Visitante" }); }, logout: () => { tokenManager.clear(); setAuthenticated(false); setDemo(false); setProfile(null); setPlayback(initialPlayback); }, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, previous, next, seek, setVolume, setShuffle, setRepeat, toggleLike, liked, error, clearError: () => setError("") }), [authenticated, demo, ready, playerReady, profile, playback, deviceId, library, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, previous, next, seek, setVolume, setShuffle, setRepeat, toggleLike, liked, error]);
+  const value = useMemo<SpotifyContextValue>(() => ({ authenticated, demo, ready, playerReady, profile, authError, playback, deviceId, library, login: beginSpotifyLogin, enterDemo: () => { setAuthError(""); setDemo(true); setAuthenticated(true); setProfile({ display_name: "Visitante" }); }, logout: () => { tokenManager.clear(); setAuthenticated(false); setDemo(false); setProfile(null); setAuthError(""); setPlayback(initialPlayback); }, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, previous, next, seek, setVolume, setShuffle, setRepeat, toggleLike, liked, error, clearError: () => setError("") }), [authenticated, demo, ready, playerReady, profile, authError, playback, deviceId, library, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, previous, next, seek, setVolume, setShuffle, setRepeat, toggleLike, liked, error]);
   return <SpotifyContext.Provider value={value}>{children}</SpotifyContext.Provider>;
 }

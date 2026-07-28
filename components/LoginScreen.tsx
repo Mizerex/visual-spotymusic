@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 
 export function LoginScreen() {
-  const { login, enterDemo } = useSpotifyAuth();
+  const { login, enterDemo, authError } = useSpotifyAuth();
   const [message, setMessage] = useState("");
   const connect = () => login().catch(error => setMessage(error.message));
   return <main className="login-screen">
@@ -21,7 +21,7 @@ export function LoginScreen() {
       </ul>
       <button className="spotify-button" onClick={connect}><span aria-hidden="true">●</span> Entrar com meu Spotify</button>
       <button className="demo-button" onClick={enterDemo}>Ver apenas uma demonstração</button>
-      {message && <p className="login-error" role="alert">{message}</p>}
+      {(message || authError) && <p className="login-error" role="alert">{message || authError}</p>}
       <small>A demonstração não acessa músicas reais. A reprodução completa no navegador exige Spotify Premium.</small>
       <p className="login-security">Conexão segura via Spotify · O Visual SpotyMusic não recebe nem armazena sua senha.</p>
       <a className="privacy-link" href="/privacy">Privacidade</a>
