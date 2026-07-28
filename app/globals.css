@@ -546,3 +546,161 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   .vinyl-perspective { left:50%;top:50%;width:96%;transform:translate(-50%,-50%); }
   .tonearm-base-layer,.tonearm-layer-image { left:71%;top:0;width:25%; }
 }
+
+/* Vitrine da biblioteca no espaço lateral do toca-discos. */
+.library-showcase { display:none; }
+
+@media(min-width:901px) {
+  .turntable-section { container-type:size; }
+  .deck {
+    left:auto;
+    right:1.5%;
+    top:50%;
+    width:auto;
+    height:96%;
+    max-width:none;
+    transform:translateY(-50%);
+  }
+  .library-showcase {
+    position:absolute;
+    left:2.2%;
+    top:4%;
+    bottom:4%;
+    width:calc(96% - 96cqh);
+    z-index:18;
+    display:flex;
+    min-width:0;
+    flex-direction:column;
+    gap:clamp(13px,2.2cqh,22px);
+    padding:clamp(13px,2.2cqh,22px);
+    overflow:hidden;
+    border:1px solid rgba(184,126,76,.14);
+    border-radius:9px;
+    background:
+      radial-gradient(circle at 15% 0,rgba(133,76,39,.13),transparent 42%),
+      linear-gradient(160deg,rgba(14,12,10,.92),rgba(6,6,5,.84));
+    box-shadow:inset 0 1px rgba(255,255,255,.025),0 16px 34px rgba(0,0,0,.28);
+  }
+  .showcase-title { flex:0 0 auto; }
+  .showcase-title span {
+    display:block;
+    margin-bottom:4px;
+    color:#8e6649;
+    font-size:clamp(6px,.8cqw,8px);
+    font-weight:700;
+    letter-spacing:.2em;
+  }
+  .showcase-title strong {
+    display:block;
+    color:#e1d7cc;
+    font:600 clamp(15px,1.7cqw,21px)/1.05 "Barlow Condensed","DM Sans",sans-serif;
+  }
+  .showcase-shelf { min-height:0; }
+  .showcase-heading {
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:9px;
+  }
+  .showcase-heading h2 {
+    margin:0;
+    color:#c9bdb1;
+    font-size:clamp(9px,1cqw,12px);
+    font-weight:700;
+    letter-spacing:.08em;
+  }
+  .showcase-heading span {
+    overflow:hidden;
+    color:#665d55;
+    font-size:7px;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .showcase-row {
+    display:grid;
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(62px,1fr);
+    gap:9px;
+    overflow-x:auto;
+    padding:0 0 7px;
+    scrollbar-width:thin;
+    scrollbar-color:#5b3923 transparent;
+    overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;
+  }
+  .showcase-card {
+    min-width:0;
+    padding:0;
+    border:0;
+    background:none;
+    color:#d9cec3;
+    text-align:left;
+    cursor:pointer;
+    scroll-snap-align:start;
+  }
+  .showcase-cover {
+    position:relative;
+    display:grid;
+    width:100%;
+    aspect-ratio:1;
+    place-items:center;
+    overflow:hidden;
+    border:1px solid rgba(199,144,94,.16);
+    border-radius:5px;
+    background:
+      radial-gradient(circle at 30% 25%,rgba(210,139,82,.42),transparent 28%),
+      linear-gradient(145deg,#53311f,#1b1510 64%,#090807);
+    box-shadow:0 7px 14px rgba(0,0,0,.42);
+  }
+  .showcase-cover>span {
+    color:#dba375;
+    font:600 clamp(20px,3cqw,35px)/1 "Libre Caslon Display",serif;
+  }
+  .showcase-cover img { width:100%;height:100%;object-fit:cover; }
+  .showcase-cover i {
+    position:absolute;
+    right:6px;
+    bottom:6px;
+    display:grid;
+    width:25px;
+    height:25px;
+    place-items:center;
+    border:1px solid rgba(245,190,139,.52);
+    border-radius:50%;
+    background:rgba(14,10,8,.82);
+    color:#e4a26c;
+    font-size:8px;
+    font-style:normal;
+    opacity:0;
+    transform:translateY(4px);
+    transition:opacity .18s ease,transform .18s ease;
+  }
+  .showcase-card:hover .showcase-cover i,
+  .showcase-card:focus-visible .showcase-cover i { opacity:1;transform:none; }
+  .showcase-card strong,
+  .showcase-card small {
+    display:block;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .showcase-card strong { margin-top:6px;font-size:9px;font-weight:600; }
+  .showcase-card small { margin-top:2px;color:#70675f;font-size:7px; }
+  .showcase-empty { margin:0;color:#625950;font-size:9px; }
+  .showcase-loading { display:grid;grid-template-columns:repeat(3,1fr);gap:9px; }
+  .showcase-loading i {
+    aspect-ratio:1;
+    border-radius:5px;
+    background:linear-gradient(110deg,#17130f 25%,#282018 45%,#17130f 65%);
+    background-size:220% 100%;
+    animation:showcaseShimmer 1.2s linear infinite;
+  }
+}
+
+@container (max-aspect-ratio: 1.32 / 1) {
+  .library-showcase { display:none; }
+  .deck { left:50%;right:auto;transform:translate(-50%,-50%); }
+}
+
+@keyframes showcaseShimmer { to { background-position:-220% 0; } }

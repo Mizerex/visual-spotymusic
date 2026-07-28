@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 import { Vinyl } from "./Vinyl";
 import { Tonearm } from "./Tonearm";
+import { LibraryShowcase } from "./LibraryShowcase";
 
 export function Turntable() {
   const { playback, toggle, activateDevice, playerReady } = useSpotifyAuth();
   const [rpm, setRpm] = useState<33 | 45>(33);
   return <section className="turntable-section" aria-label="Toca-discos">
+    <LibraryShowcase />
     <div className="turntable-topline"><span className="model">MM-77 <small>DIRECT DRIVE</small></span><span className={`status-light ${playback.isPlaying ? "on" : ""}`}><i /> {playback.isPlaying ? "PLAYING" : "STANDBY"}</span></div>
     <div className="deck">
       <div className="wood-grain" />
