@@ -11,14 +11,6 @@ const categories = [
   { id: "artists", label: "Artistas", icon: "artist" }, { id: "tracks", label: "Músicas", icon: "music" },
 ] as const;
 
-function DetailArtwork({ image, name }: { image?: string; name: string }) {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [image]);
-  return image?.trim() && !failed
-    ? <img src={image} alt={`Capa de ${name}`} onError={() => setFailed(true)} />
-    : <span aria-hidden="true">♫</span>;
-}
-
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { library, loadLibrary, loadDetails, search, playItem, playback, profile, logout, demo, playerReady } = useSpotifyAuth();
   const [active, setActive] = useState<(typeof categories)[number]["id"]>("playlists");
@@ -46,7 +38,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     {!query && <><p className="nav-label library-label">SUA BIBLIOTECA</p><div className="category-tabs">{categories.map(category => <button key={category.id} className={active === category.id ? "active" : ""} onClick={() => setActive(category.id)} title={category.label}><Icon name={category.icon} /><span>{category.label}</span></button>)}</div></>}
     <div className="sidebar-content">{detail ? <div className="library-detail">
       <button className="detail-back" onClick={() => setDetail(null)}>← Voltar</button>
-      <div className="detail-hero"><DetailArtwork image={detail.item.image} name={detail.item.name} /><div><small>{detail.item.kind.toUpperCase()}</small><strong>{detail.item.name}</strong><p>{detail.item.subtitle}</p></div></div>
+      <div className="detail-hero">{detail.item.image ? <img src={detail.item.image} alt="" /> : <span>♫</span>}<div><small>{detail.item.kind.toUpperCase()}</small><strong>{detail.item.name}</strong><p>{detail.item.subtitle}</p></div></div>
       <button className="detail-play" onClick={() => playItem(detail.item)}>▶ Reproduzir</button>
       {detailLoading ? <p className="detail-loading">Carregando faixas…</p> : <LibraryList items={detail.tracks} selected={playback.track?.id} onPlay={playItem} emptyText="O Spotify não liberou a lista, mas Reproduzir ainda pode tocar a coleção." />}
     </div> : <LibraryList items={searchItems || library[active]} selected={playback.track?.id} onPlay={item => { void openItem(item); }} emptyText={query ? "Nenhum resultado para esta busca." : "Sua biblioteca aparecerá aqui."} />}</div>

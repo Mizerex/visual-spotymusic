@@ -1,5 +1,7 @@
 # Visual SpotyMusic
 
+**Versão online preparada: 2.2.0**
+
 Seu Spotify em uma experiência visual e analógica: um web app em Next.js que transforma biblioteca, busca e reprodução em um toca-discos hi-fi inspirado nos anos 1970.
 
 ## Requisitos
@@ -32,7 +34,7 @@ NEXT_PUBLIC_SPOTIFY_CLIENT_ID=seu_client_id
 NEXT_PUBLIC_SPOTIFY_REDIRECT_URI=http://127.0.0.1:3000/callback
 ```
 
-Se publicar em outro domínio, substitua a Redirect URI por `https://seu-dominio.com/callback` tanto no Dashboard quanto no ambiente de produção. Os valores precisam ser idênticos.
+Na versão publicada, a Redirect URI é detectada automaticamente como `<domínio atual>/callback`. Cadastre esse endereço exato no Spotify Developer Dashboard. Para o slug desejado, use `https://visual-spotymusic.manomizer.chatgpt.site/callback`.
 
 ## Executar e gerar produção
 
@@ -46,7 +48,7 @@ O modo demonstração permite validar a interface e as animações sem credencia
 
 ## Publicação
 
-Publique como qualquer projeto Next.js, configurando as duas variáveis `NEXT_PUBLIC_*` no provedor. A hospedagem deve usar HTTPS. Depois de publicar, cadastre a nova URL de callback no Spotify antes de testar o login.
+Publique como projeto Next.js e configure `NEXT_PUBLIC_SPOTIFY_CLIENT_ID`. A Redirect URI pode ser detectada automaticamente pelo domínio atual. A hospedagem deve usar HTTPS. Depois de publicar, cadastre a nova URL de callback no Spotify antes de testar o login.
 
 ## Recursos
 
@@ -84,3 +86,10 @@ O app nunca usa Client Secret. O access token e o refresh token ficam no armazen
 ## Arquitetura
 
 Componentes de interface ficam em `components`, hooks em `hooks`, integração em `services`, tipos em `types` e o estado compartilhado em `context/SpotifyProvider.tsx`. A rota `/callback` conclui o PKCE e volta à tela principal.
+
+
+## ChatGPT Sites
+
+Este pacote preserva a configuração `.openai/hosting.json` e está preparado para o slug `visual-spotymusic`. Consulte `PUBLICACAO-CHATGPT-SITES.md` antes de publicar.
+
+A versão 2.2.0 também usa os endpoints genéricos atuais do Spotify para curtir, descurtir e verificar a faixa: `/me/library` e `/me/library/contains`.

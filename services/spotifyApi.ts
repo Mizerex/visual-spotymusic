@@ -15,10 +15,12 @@ export async function spotifyApi<T>(path: string, init: RequestInit = {}, retry 
     await refreshSpotifyToken();
     return spotifyApi<T>(path, init, false);
   }
-  if (response.status === 204) return undefined as T;
   if (!response.ok) {
     const message = response.status === 403 ? "Este recurso exige uma conta Spotify Premium." : response.status === 404 ? "Nenhum dispositivo de reprodução foi encontrado." : "O Spotify não conseguiu concluir esta ação.";
     throw new Error(message);
   }
-  return response.json();
+  if (response.status === 204) return undefined as T;
+  const text = await response.text();
+  if (!text.trim()) return undefined as T;
+  return JSON.parse(text) as T;
 }

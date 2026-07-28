@@ -1,5 +1,6 @@
 node_modules
 .next
+.vercel
 .open-next
 dist
 dist-*-backup-*

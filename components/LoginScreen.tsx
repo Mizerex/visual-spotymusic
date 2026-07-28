@@ -18,6 +18,7 @@ export function LoginScreen() {
       <button className="demo-button" onClick={enterDemo}>Explorar em modo demonstração</button>
       {message && <p className="login-error" role="alert">{message}</p>}
       <small>Conexão segura via Spotify · Nenhuma senha é armazenada</small>
+      <a className="privacy-link" href="/privacy">Privacidade</a>
     </section>
   </main>;
 }

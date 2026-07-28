@@ -94,14 +94,14 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   }, [authenticated, demo]);
 
   useEffect(() => {
-    if (!playback.isPlaying || !playback.track || playback.duration <= 0) { if (demoTimer.current) clearInterval(demoTimer.current); return; }
+    if (!demo || !playback.isPlaying) { if (demoTimer.current) clearInterval(demoTimer.current); return; }
     demoTimer.current = setInterval(() => setPlayback(previous => {
       const position = previous.position + 500;
       if (position >= previous.duration) return { ...previous, isPlaying: false, position: previous.duration };
       return { ...previous, position };
     }), 500);
     return () => { if (demoTimer.current) clearInterval(demoTimer.current); };
-  }, [playback.isPlaying, playback.track, playback.duration]);
+  }, [demo, playback.isPlaying]);
 
   const loadLibrary = useCallback(async (category: Category) => {
     if (demo) {
@@ -192,7 +192,36 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const setVolume = useCallback(async (value: number) => { setPlayback(p => ({ ...p, volume: value })); if (!demo) await playerRef.current?.setVolume(value); }, [demo]);
   const setShuffle = useCallback(async (value: boolean) => { setPlayback(p => ({ ...p, shuffle: value })); if (!demo) await spotifyApi(`/me/player/shuffle?state=${value}`, { method: "PUT" }); }, [demo]);
   const setRepeat = useCallback(async (value: PlaybackSnapshot["repeat"]) => { setPlayback(p => ({ ...p, repeat: value })); if (!demo) await spotifyApi(`/me/player/repeat?state=${value}`, { method: "PUT" }); }, [demo]);
-  const toggleLike = useCallback(async () => { if (!playback.track) return; const value = !liked; setLiked(value); if (!demo) await spotifyApi(`/me/tracks?ids=${playback.track.id}`, { method: value ? "PUT" : "DELETE" }); }, [demo, liked, playback.track]);
+  useEffect(() => {
+    const track = playback.track;
+    if (!track) {
+      setLiked(false);
+      return;
+    }
+    if (demo) {
+      setLiked(false);
+      return;
+    }
+    let cancelled = false;
+    spotifyApi<boolean[]>(`/me/library/contains?uris=${encodeURIComponent(track.uri)}`)
+      .then(result => { if (!cancelled) setLiked(Boolean(result?.[0])); })
+      .catch(() => { if (!cancelled) setLiked(false); });
+    return () => { cancelled = true; };
+  }, [demo, playback.track?.uri]);
+
+  const toggleLike = useCallback(async () => {
+    if (!playback.track) return;
+    const value = !liked;
+    const uri = playback.track.uri;
+    setLiked(value);
+    if (demo) return;
+    try {
+      await spotifyApi(`/me/library?uris=${encodeURIComponent(uri)}`, { method: value ? "PUT" : "DELETE" });
+    } catch (reason) {
+      setLiked(!value);
+      fail(reason);
+    }
+  }, [demo, liked, playback.track, fail]);
 
   const playerReady = demo || Boolean(deviceId);
   const value = useMemo<SpotifyContextValue>(() => ({ authenticated, demo, ready, playerReady, profile, playback, deviceId, library, login: beginSpotifyLogin, enterDemo: () => { setDemo(true); setAuthenticated(true); setProfile({ display_name: "Visitante" }); }, logout: () => { tokenManager.clear(); setAuthenticated(false); setDemo(false); setProfile(null); setPlayback(initialPlayback); }, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, previous, next, seek, setVolume, setShuffle, setRepeat, toggleLike, liked, error, clearError: () => setError("") }), [authenticated, demo, ready, playerReady, profile, playback, deviceId, library, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, previous, next, seek, setVolume, setShuffle, setRepeat, toggleLike, liked, error]);
