@@ -865,8 +865,8 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 /* Luz de mira independente: preserva o botão original desenhado na base. */
 .target-light {
   position:absolute;
-  right:3.4%;
-  top:4.8%;
+  left:2.2%;
+  top:10.5%;
   z-index:12;
   width:clamp(30px,3.5vw,46px);
   height:clamp(44px,5.6vw,72px);
@@ -879,7 +879,7 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 }
 .target-light-stem {
   position:absolute;
-  right:14%;
+  left:14%;
   top:5%;
   width:28%;
   height:76%;
@@ -912,30 +912,30 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 .target-light:focus-visible { outline:2px solid #e7a45f;outline-offset:4px;border-radius:50%; }
 .target-light-beam {
   position:absolute;
-  right:6.2%;
-  top:9.2%;
+  left:4.8%;
+  top:14%;
   z-index:8;
-  width:54%;
-  height:48%;
+  width:48%;
+  height:40%;
   pointer-events:none;
   opacity:0;
-  transform:rotate(3deg);
-  transform-origin:100% 0;
-  clip-path:polygon(100% 0,8% 52%,20% 88%);
+  transform:rotate(-2deg);
+  transform-origin:0 0;
+  clip-path:polygon(0 0,92% 48%,76% 78%);
   background:
-    radial-gradient(ellipse at 88% 10%,rgba(255,244,214,.42),rgba(255,195,105,.12) 27%,rgba(255,157,62,.025) 54%,transparent 70%);
+    radial-gradient(ellipse at 12% 10%,rgba(255,244,214,.34),rgba(255,195,105,.09) 25%,rgba(255,157,62,.018) 52%,transparent 68%);
   mix-blend-mode:screen;
   filter:blur(2px);
   transition:opacity .28s ease;
 }
 .target-light-beam.is-on {
-  opacity:.38;
+  opacity:.3;
   animation:targetLightWarmup .38s ease-out both;
 }
 .target-light-beam.is-on::after {
   content:"";
   position:absolute;
-  right:0;
+  left:0;
   bottom:8%;
   width:64%;
   height:54%;
@@ -946,12 +946,12 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 }
 @keyframes targetLightWarmup {
   0% { opacity:0;filter:blur(5px); }
-  65% { opacity:.48; }
-  100% { opacity:.38;filter:blur(2px); }
+  65% { opacity:.38; }
+  100% { opacity:.3;filter:blur(2px); }
 }
 @media(max-width:780px) {
-  .target-light { right:2.2%;top:5%;width:34px;height:52px; }
-  .target-light-beam { right:5%;top:10%;width:55%;height:43%; }
+  .target-light { left:1.2%;top:12%;width:34px;height:52px; }
+  .target-light-beam { left:4%;top:16%;width:50%;height:38%; }
 }
 @media(prefers-reduced-motion:reduce) {
   .target-light-beam.is-on { animation:none; }
