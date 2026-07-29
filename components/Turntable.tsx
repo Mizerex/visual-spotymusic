@@ -12,7 +12,7 @@ export function Turntable() {
     <div className="deck">
       <div className="wood-grain" />
       <div className="platter"><div className="platter-dots" /><Vinyl playing={playback.isPlaying} rpm={rpm} image={playback.track?.album.images?.[0]?.url} album={playback.track?.album.name} /></div>
-      <Tonearm position={playback.position} duration={playback.duration} hasTrack={Boolean(playback.track)} />
+      <Tonearm position={playback.position} duration={playback.duration} hasTrack={Boolean(playback.track)} playing={playback.isPlaying} />
       <div className="deck-controls">
         <button className="power-knob" onClick={playback.track ? toggle : activateDevice} aria-label={playback.track ? (playback.isPlaying ? "Pausar" : "Iniciar reprodução") : "Ativar toca-discos"}><i className={playerReady ? "on" : ""} /></button>
         <div className="rpm-switch"><button className={rpm === 33 ? "active" : ""} onClick={() => setRpm(33)}>33</button><button className={rpm === 45 ? "active" : ""} onClick={() => setRpm(45)}>45</button><small>RPM</small></div>
