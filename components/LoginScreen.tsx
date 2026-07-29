@@ -37,19 +37,23 @@ export function LoginScreen() {
       <div className={styles.glow} aria-hidden="true" />
 
       <div className={styles.layout}>
-        <section className={styles.card} aria-labelledby="login-title">
-          <div className={styles.deck} aria-hidden="true">
-            <div className={styles.record}><i /></div>
-            <div className={styles.arm} />
-          </div>
+        <section className={styles.card} aria-labelledby="login-heading">
+          <img
+            className={styles.logo}
+            src="/visual-spotymusic-icon.png"
+            alt="Visual SpotyMusic"
+            width="320"
+            height="320"
+          />
 
-          <p className={styles.eyebrow}>APRESENTAMOS</p>
-          <h1 id="login-title" className={styles.title}><span>Visual</span> SpotyMusic</h1>
-          <p className={styles.tagline}>Seu Spotify em uma experiência visual e analógica.</p>
-          <p className={styles.copy}>
-            Entre na sua biblioteca, escolha uma faixa e veja a música ganhar cor,
-            movimento e textura em um toca-discos inspirado nos grandes sistemas hi-fi dos anos 70.
-          </p>
+          <div className={styles.intro}>
+            <p className={styles.eyebrow}>EXPERIÊNCIA MUSICAL HI-FI</p>
+            <h1 id="login-heading" className={styles.heading}>Seu Spotify em uma experiência visual e analógica.</h1>
+            <p className={styles.copy}>
+              Entre na sua biblioteca, escolha uma faixa e veja a música ganhar cor,
+              movimento e textura em um toca-discos inspirado nos grandes sistemas hi-fi dos anos 70.
+            </p>
+          </div>
 
           <div className={styles.actions}>
             <button
