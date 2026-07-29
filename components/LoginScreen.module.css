@@ -88,8 +88,31 @@
   background: linear-gradient(118deg, rgba(255,255,255,0.04), transparent 26%, transparent 72%, rgba(94,220,70,0.025));
 }
 
+.card::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 44px;
+  left: 50%;
+  width: 150px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(126, 255, 55, 0.34) 0%,
+    rgba(45, 226, 54, 0.2) 34%,
+    rgba(26, 171, 52, 0.1) 56%,
+    transparent 76%
+  );
+  filter: blur(20px);
+}
+
 .logo {
   display: block;
+  position: relative;
+  z-index: 1;
   width: min(250px, 70%);
   height: auto;
   margin: -10px auto -6px;
@@ -247,6 +270,7 @@
   .screen { padding: 12px; }
   .layout { gap: 12px; min-height: calc(100vh - 24px); }
   .card { padding: 22px 18px 20px; border-radius: 14px; }
+  .card::after { top: 20px; width: 138px; }
   .logo { width: min(220px, 74%); margin-top: -12px; margin-bottom: -8px; }
   .heading { font-size: 23px; }
   .copy { margin: 13px auto 18px; font-size: 12.5px; line-height: 1.6; }
@@ -260,6 +284,7 @@
   .screen { padding-top: 14px; padding-bottom: 14px; }
   .layout { min-height: calc(100vh - 28px); }
   .card { padding-top: 24px; padding-bottom: 22px; }
+  .card::after { top: 14px; width: 132px; }
   .logo { width: 210px; margin-top: -18px; margin-bottom: -14px; }
   .copy { margin-top: 12px; margin-bottom: 18px; }
   .benefits { margin-top: 14px; }
