@@ -1,0 +1,161 @@
+.perspective {
+  position: absolute;
+  inset: 3.2%;
+  border-radius: 50%;
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,.72));
+}
+
+.vinyl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  will-change: transform;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 18%, rgba(255,255,255,.025) 18.2% 18.7%, transparent 19% 100%),
+    repeating-radial-gradient(circle at 50% 50%, #151515 0 1.2px, #242424 1.4px 2.2px, #111 2.4px 3.5px),
+    radial-gradient(circle at 38% 28%, #2d2d2d 0, #181818 30%, #0d0d0d 72%, #050505 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.08),
+    inset 0 0 42px rgba(0,0,0,.92),
+    inset 0 0 110px rgba(255,255,255,.035),
+    0 2px 2px rgba(255,255,255,.12);
+}
+
+.vinyl::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    conic-gradient(from 8deg,
+      transparent 0 7%,
+      rgba(255,255,255,.09) 10%,
+      rgba(255,255,255,.015) 16%,
+      transparent 23% 48%,
+      rgba(255,255,255,.055) 56%,
+      transparent 67% 100%);
+  mix-blend-mode: screen;
+  opacity: .8;
+  pointer-events: none;
+}
+
+.vinyl::after {
+  content: "";
+  position: absolute;
+  inset: 1.5%;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.045),
+    inset 12px 18px 30px rgba(255,255,255,.025),
+    inset -18px -20px 35px rgba(0,0,0,.55);
+  pointer-events: none;
+}
+
+.grooves {
+  position: absolute;
+  inset: 4.7%;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle,
+      transparent 0 4.2px,
+      rgba(255,255,255,.045) 4.5px 5px,
+      rgba(0,0,0,.28) 5.3px 6px,
+      transparent 6.3px 8.4px);
+  opacity: .82;
+}
+
+.runout {
+  position: absolute;
+  inset: 30.5%;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    0 0 0 5px rgba(0,0,0,.16),
+    0 0 0 8px rgba(255,255,255,.025),
+    0 0 0 12px rgba(0,0,0,.2);
+}
+
+.label {
+  position: absolute;
+  inset: 33.5%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 30%, rgba(255,255,255,.2), transparent 28%),
+    radial-gradient(circle at 50% 52%, #ef3945 0, #e73543 62%, #bd2632 100%);
+  color: #f7ddd7;
+  box-shadow:
+    0 0 0 1px rgba(78,8,13,.9),
+    0 2px 5px rgba(0,0,0,.65),
+    inset 0 1px rgba(255,255,255,.22),
+    inset 0 -9px 20px rgba(89,7,13,.18);
+}
+
+.label::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(12deg, rgba(255,255,255,.018) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.08);
+  filter: saturate(.92) contrast(1.04) brightness(.92);
+}
+
+.fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+  transform: rotate(-12deg);
+}
+
+.fallback strong {
+  font-family: "Libre Caslon Display", serif;
+  font-size: clamp(8px, 1.05vw, 15px);
+  letter-spacing: .08em;
+}
+
+.fallback small {
+  max-width: 78%;
+  overflow: hidden;
+  color: rgba(71,10,14,.82);
+  font-size: clamp(4px, .42vw, 6px);
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spindle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 5;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 38% 32%, #fff 0 42%, #d8d8d8 45% 65%, #8b8b8b 70% 100%);
+  box-shadow:
+    0 0 0 2px rgba(100,16,22,.4),
+    0 1px 3px rgba(0,0,0,.8),
+    inset 0 1px rgba(255,255,255,.8);
+}
+
+@media (max-width: 700px) {
+  .perspective { inset: 4%; }
+  .label { inset: 34%; }
+  .spindle { width: 7px; height: 7px; }
+}
