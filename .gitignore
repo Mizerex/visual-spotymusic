@@ -1,0 +1,14 @@
+node_modules
+.next
+.open-next
+dist
+dist-*-backup-*
+out
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+dev.log
+dev.err
+dev.log
+dev.err

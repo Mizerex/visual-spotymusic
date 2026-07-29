@@ -93,3 +93,7 @@ Componentes de interface ficam em `components`, hooks em `hooks`, integração e
 Este pacote preserva a configuração `.openai/hosting.json` e está preparado para o slug `visual-spotymusic`. Consulte `PUBLICACAO-CHATGPT-SITES.md` antes de publicar.
 
 A versão 2.2.0 também usa os endpoints genéricos atuais do Spotify para curtir, descurtir e verificar a faixa: `/me/library` e `/me/library/contains`.
+
+## Publicidade na tela de login
+
+A versão 2.3.0 adiciona dois espaços responsivos para anúncios na tela de login. Consulte `ANUNCIOS.md` e configure somente os identificadores públicos do provedor.

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 const title = "Visual SpotyMusic — Seu Spotify em uma experiência visual e analógica";
@@ -14,5 +15,16 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body>{children}</body></html>;
+  const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
+
+  return <html lang="pt-BR"><body>
+    {adsenseClientId && <Script
+      id="google-adsense"
+      async
+      strategy="afterInteractive"
+      crossOrigin="anonymous"
+      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
+    />}
+    {children}
+  </body></html>;
 }
