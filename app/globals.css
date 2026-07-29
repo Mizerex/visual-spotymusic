@@ -956,3 +956,108 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 @media(prefers-reduced-motion:reduce) {
   .target-light-beam.is-on { animation:none; }
 }
+
+/* Login público: identidade oficial e espaços de divulgação. */
+.login-screen {
+  overflow:auto;
+  padding:32px 24px;
+}
+.login-layout {
+  position:relative;
+  z-index:1;
+  width:min(1080px,100%);
+  display:grid;
+  grid-template-columns:minmax(0,620px) minmax(280px,320px);
+  grid-template-areas:
+    "login rectangle"
+    "banner banner";
+  align-items:center;
+  justify-content:center;
+  gap:22px;
+}
+.login-card {
+  grid-area:login;
+  width:100%;
+  padding:38px 52px 34px;
+}
+.login-logo {
+  display:block;
+  width:min(100%,470px);
+  height:auto;
+  margin:0 auto 24px;
+  filter:drop-shadow(0 10px 20px rgba(0,0,0,.45));
+}
+.login-card .tagline { margin:0; }
+.login-card .privacy-link {
+  display:inline-block;
+  margin-top:13px;
+  color:#bd8355;
+  font-size:11px;
+}
+.ad-slot {
+  position:relative;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid rgba(201,144,92,.3);
+  border-radius:4px;
+  background:
+    linear-gradient(135deg,rgba(59,39,25,.46),rgba(15,12,10,.82)),
+    repeating-linear-gradient(45deg,transparent 0 12px,rgba(255,255,255,.018) 13px 14px);
+  box-shadow:0 20px 55px rgba(0,0,0,.36);
+}
+.ad-label {
+  position:absolute;
+  top:9px;
+  left:11px;
+  color:#9d8068;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.2em;
+}
+.ad-placeholder-copy {
+  display:grid;
+  gap:7px;
+  padding:28px;
+  color:#8d7d6e;
+  text-align:center;
+}
+.ad-placeholder-copy strong {
+  color:#c4a98e;
+  font:400 21px "Libre Caslon Display",serif;
+}
+.ad-placeholder-copy small {
+  color:#74685d;
+  font-size:10px;
+}
+.login-ad--rectangle {
+  grid-area:rectangle;
+  width:100%;
+  min-height:250px;
+}
+.login-ad--banner {
+  grid-area:banner;
+  width:min(100%,900px);
+  min-height:100px;
+  justify-self:center;
+}
+
+@media(max-width:900px) {
+  .login-layout {
+    grid-template-columns:minmax(0,620px);
+    grid-template-areas:
+      "login"
+      "banner";
+  }
+  .login-ad--rectangle { display:none; }
+  .login-ad--banner { min-height:92px; }
+}
+
+@media(max-width:520px) {
+  .login-screen { padding:18px 12px; }
+  .login-layout { gap:14px; }
+  .login-card { padding:30px 20px 26px; }
+  .login-logo { margin-bottom:18px; }
+  .login-card .tagline { font-size:21px; }
+  .login-ad--banner { min-height:84px; }
+}

@@ -7,6 +7,16 @@ export default {
         { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } },
       );
     }
+    if (url.pathname === "/adsense-config.json") {
+      return Response.json(
+        {
+          clientId: env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "",
+          loginRectangleSlot: env.NEXT_PUBLIC_ADSENSE_LOGIN_RECTANGLE_SLOT || "",
+          loginBannerSlot: env.NEXT_PUBLIC_ADSENSE_LOGIN_BANNER_SLOT || "",
+        },
+        { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } },
+      );
+    }
     if (!env?.ASSETS?.fetch) {
       return new Response("Visual SpotyMusic: arquivos estáticos indisponíveis.", { status: 503 });
     }

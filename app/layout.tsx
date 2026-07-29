@@ -5,7 +5,7 @@ const title = "Visual SpotyMusic — Seu Spotify em uma experiência visual e an
 const description = "Uma experiência visual retrô premium para ouvir e enxergar sua biblioteca Spotify de um jeito mais tátil.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://visual-spotymusic.manomizer.chatgpt.site"),
+  metadataBase: new URL("https://visual-spotymusic-live.manomizer.chatgpt.site"),
   title,
   description,
   manifest: "/site.webmanifest",
