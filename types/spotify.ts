@@ -27,6 +27,8 @@ export type PlaybackSnapshot = {
   track: SpotifyTrack | null;
   isPlaying: boolean;
   stopped: boolean;
+  queueIndex: number;
+  queueLength: number;
   position: number;
   duration: number;
   volume: number;

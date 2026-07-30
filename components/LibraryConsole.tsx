@@ -79,9 +79,12 @@ export function LibraryConsole({ category, mode }: { category: LibraryCategory; 
     };
   }, [exploreQuery, mode, search]);
 
-  const openItem = async (item: LibraryItem) => {
+  const openItem = async (item: LibraryItem, index: number) => {
     if (item.kind === "track") {
-      await playItem(item);
+      const context = detail && (detail.item.kind === "playlist" || detail.item.kind === "album")
+        ? { uri: detail.item.uri, tracks: detail.tracks, index }
+        : undefined;
+      await playItem(item, context);
       return;
     }
 
@@ -133,7 +136,7 @@ export function LibraryConsole({ category, mode }: { category: LibraryCategory; 
       {detail && (
         <div className="library-console-detail-actions">
           <button type="button" className="library-console-back" onClick={() => setDetail(null)}>← Voltar</button>
-          <button type="button" className="library-console-play-all" onClick={() => void playItem(detail.item)}>
+          <button type="button" className="library-console-play-all" onClick={() => void playItem(detail.item, (detail.item.kind === "playlist" || detail.item.kind === "album") ? { uri: detail.item.uri, tracks: detail.tracks, index: 0 } : undefined)}>
             ▶ {mode === "radio" ? "Iniciar rádio" : "Reproduzir tudo"}
           </button>
         </div>
@@ -151,7 +154,7 @@ export function LibraryConsole({ category, mode }: { category: LibraryCategory; 
             key={`${item.kind}-${item.id}-${index}`}
             type="button"
             className={playback.track?.id === item.id ? "featured" : ""}
-            onClick={() => void openItem(item)}
+            onClick={() => void openItem(item, index)}
           >
             <span className="library-console-cover">
               {item.image ? <img src={item.image} alt="" /> : <i aria-hidden="true">{mode === "radio" ? "◉" : "♫"}</i>}
