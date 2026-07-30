@@ -26,6 +26,7 @@ export type LibraryItem = {
 export type PlaybackSnapshot = {
   track: SpotifyTrack | null;
   isPlaying: boolean;
+  stopped: boolean;
   position: number;
   duration: number;
   volume: number;

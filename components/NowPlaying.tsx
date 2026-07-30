@@ -13,7 +13,7 @@ export function NowPlaying() {
       {track?.album.images?.[0]?.url ? <img src={track.album.images[0].url} alt={`Capa de ${track.album.name}`} /> : <><div className="fallback-art"><span>VISUAL</span><b>♫</b><small>SPOTYMUSIC SESSIONS</small></div></>}
       <span className="album-sleeve-edge" />
     </div>
-    <div className="track-info"><div><h3 title={track?.name || "Nenhuma faixa selecionada"}>{track?.name || "Escolha uma faixa"}</h3><p title={track?.artists.map(a => a.name).join(", ")}>{track?.artists.map(a => a.name).join(", ") || "Sua biblioteca está pronta"}</p><small>{track?.album.name || "Conecte o som e solte a agulha"}</small></div><button className={liked ? "liked" : ""} onClick={toggleLike} aria-label={liked ? "Remover das curtidas" : "Curtir faixa"}>{liked ? "♥" : "♡"}</button></div>
+    <div className="track-info"><div><h3 title={track?.name || "Nenhuma faixa selecionada"}>{track?.name || "Escolha uma faixa"}</h3><p title={track?.artists.map(a => a.name).join(", ")}>{track?.artists.map(a => a.name).join(", ") || "Sua biblioteca está pronta"}</p><small>{track?.album.name || "Conecte o som e solte a agulha"}</small></div><button disabled={!track} className={liked ? "liked" : ""} onClick={toggleLike} aria-label={liked ? "Remover das curtidas" : "Curtir faixa"}>{liked ? "♥" : "♡"}</button></div>
     {track?.external_urls?.spotify && <a className="open-spotify" href={track.external_urls.spotify} target="_blank" rel="noreferrer">Abrir faixa no Spotify ↗</a>}
     <ProgressBar position={playback.position} duration={playback.duration} onChange={seek} />
     <PlaybackControls />

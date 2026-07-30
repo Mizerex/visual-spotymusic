@@ -1,13 +1,15 @@
 "use client";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 export function PlaybackControls() {
-  const { playback, toggle, previous, next, setShuffle, setRepeat } = useSpotifyAuth();
+  const { playback, toggle, stop, previous, next, setShuffle, setRepeat } = useSpotifyAuth();
+  const unavailable = !playback.track;
   const cycleRepeat = () => setRepeat(playback.repeat === "off" ? "context" : playback.repeat === "context" ? "track" : "off");
   return <div className="playback-controls">
-    <button className={playback.shuffle ? "active" : ""} onClick={() => setShuffle(!playback.shuffle)} aria-label="Aleatório">⌘</button>
-    <button onClick={previous} aria-label="Faixa anterior">◀│</button>
-    <button className="main-play" onClick={toggle} aria-label={playback.isPlaying ? "Pausar" : "Reproduzir"}>{playback.isPlaying ? "Ⅱ" : "▶"}</button>
-    <button onClick={next} aria-label="Próxima faixa">│▶</button>
-    <button className={playback.repeat !== "off" ? "active" : ""} onClick={cycleRepeat} aria-label="Repetir">↻{playback.repeat === "track" ? <sup>1</sup> : null}</button>
+    <button disabled={unavailable} className={playback.shuffle ? "active" : ""} onClick={() => setShuffle(!playback.shuffle)} aria-label="Aleatório">⌘</button>
+    <button disabled={unavailable} onClick={previous} aria-label="Faixa anterior">◀│</button>
+    <button disabled={unavailable} className="main-play" onClick={toggle} aria-label={playback.isPlaying ? "Pausar" : "Reproduzir"}>{playback.isPlaying ? "Ⅱ" : "▶"}</button>
+    <button disabled={unavailable || playback.stopped} className="stop-control" onClick={stop} aria-label="Parar música e recolher o braço" title="STOP"><span>■</span><small>STOP</small></button>
+    <button disabled={unavailable} onClick={next} aria-label="Próxima faixa">│▶</button>
+    <button disabled={unavailable} className={playback.repeat !== "off" ? "active" : ""} onClick={cycleRepeat} aria-label="Repetir">↻{playback.repeat === "track" ? <sup>1</sup> : null}</button>
   </div>;
 }
