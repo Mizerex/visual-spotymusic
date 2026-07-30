@@ -234,13 +234,13 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const stop = useCallback(async () => {
     if (!playback.track) return;
     stoppedRef.current = true;
+    setPlayback(previous => ({ ...previous, isPlaying: false, stopped: true, position: 0 }));
     try {
       if (!demo) {
         await playerRef.current?.activateElement();
         await spotifyApi(`/me/player/pause${deviceId ? `?device_id=${deviceId}` : ""}`, { method: "PUT" });
         await playerRef.current?.seek(0);
       }
-      setPlayback(previous => ({ ...previous, isPlaying: false, stopped: true, position: 0 }));
     } catch (reason) {
       stoppedRef.current = false;
       fail(reason);
