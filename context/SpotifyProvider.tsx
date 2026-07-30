@@ -14,12 +14,14 @@ type PlayContext = { uri: string; tracks: LibraryItem[]; index: number };
 type SpotifyContextValue = {
   authenticated: boolean; demo: boolean; ready: boolean; playerReady: boolean; profile: Profile | null;
   demoFinished: boolean;
+  tone: { balance: number; bass: number; treble: number };
   playback: PlaybackSnapshot; deviceId: string; library: Record<Category, LibraryItem[]>;
   login: () => Promise<void>; enterDemo: () => void; restartDemo: () => Promise<void>; logout: () => void;
   loadLibrary: (category: Category) => Promise<void>; loadDetails: (item: LibraryItem) => Promise<LibraryItem[]>; search: (query: string) => Promise<Record<Category, LibraryItem[]>>;
   playItem: (item: LibraryItem, context?: PlayContext) => Promise<void>; toggle: () => Promise<void>; stop: () => Promise<void>; previous: () => Promise<void>; next: () => Promise<void>;
   activateDevice: () => Promise<void>;
   seek: (ms: number) => Promise<void>; setVolume: (value: number) => Promise<void>;
+  setBalance: (value: number) => void; setBass: (value: number) => void; setTreble: (value: number) => void;
   setShuffle: (value: boolean) => Promise<void>; setRepeat: (value: "off" | "context" | "track") => Promise<void>;
   toggleLike: () => Promise<void>; liked: boolean; error: string; clearError: () => void;
 };
@@ -68,6 +70,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [demoFinished, setDemoFinished] = useState(false);
+  const [tone, setTone] = useState({ balance: 0, bass: 0, treble: 0 });
   const [playback, setPlayback] = useState(initialPlayback);
   const [deviceId, setDeviceId] = useState("");
   const [library, setLibrary] = useState<Record<Category, LibraryItem[]>>({ playlists: [], albums: [], artists: [], tracks: [] });
@@ -75,6 +78,10 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState("");
   const playerRef = useRef<SpotifyPlayer | null>(null);
   const demoAudioRef = useRef<HTMLAudioElement | null>(null);
+  const demoAudioContextRef = useRef<AudioContext | null>(null);
+  const demoBalanceRef = useRef<StereoPannerNode | null>(null);
+  const demoBassRef = useRef<BiquadFilterNode | null>(null);
+  const demoTrebleRef = useRef<BiquadFilterNode | null>(null);
   const stoppedRef = useRef(true);
   const queueRef = useRef<PlayContext | null>(null);
 
@@ -153,6 +160,27 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     audio.preload = "metadata";
     audio.volume = playback.volume;
     demoAudioRef.current = audio;
+    try {
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaElementSource(audio);
+      const bass = audioContext.createBiquadFilter();
+      const treble = audioContext.createBiquadFilter();
+      const balance = audioContext.createStereoPanner();
+      bass.type = "lowshelf";
+      bass.frequency.value = 250;
+      bass.gain.value = tone.bass;
+      treble.type = "highshelf";
+      treble.frequency.value = 4000;
+      treble.gain.value = tone.treble;
+      balance.pan.value = tone.balance / 50;
+      source.connect(bass).connect(treble).connect(balance).connect(audioContext.destination);
+      demoAudioContextRef.current = audioContext;
+      demoBassRef.current = bass;
+      demoTrebleRef.current = treble;
+      demoBalanceRef.current = balance;
+    } catch {
+      /* O elemento de áudio continua funcionando sem processamento avançado. */
+    }
 
     const syncTime = () => {
       setPlayback(previous => ({
@@ -172,6 +200,11 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     audio.addEventListener("ended", finish);
     return () => {
       audio.pause();
+      void demoAudioContextRef.current?.close();
+      demoAudioContextRef.current = null;
+      demoBassRef.current = null;
+      demoTrebleRef.current = null;
+      demoBalanceRef.current = null;
       audio.removeEventListener("timeupdate", syncTime);
       audio.removeEventListener("loadedmetadata", syncTime);
       audio.removeEventListener("ended", finish);
@@ -265,6 +298,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
         setDemoFinished(false);
         stoppedRef.current = false;
         setPlayback(previous => ({ ...previous, track, duration: track.duration_ms, position: 0, isPlaying: true, stopped: false, queueIndex: context?.index || 0, queueLength: context?.tracks.length || 1 }));
+        await demoAudioContextRef.current?.resume();
         await audio.play();
         return;
       }
@@ -302,6 +336,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
         if (shouldPlay) {
           if (wasStopped || audio.ended) audio.currentTime = 0;
           setDemoFinished(false);
+          await demoAudioContextRef.current?.resume();
           await audio.play();
         } else {
           audio.pause();
@@ -419,6 +454,24 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     } catch (reason) { fail(reason); }
   }, [demo, fail]);
 
+  const setBalance = useCallback((value: number) => {
+    const normalized = Math.max(-50, Math.min(50, value));
+    setTone(previous => ({ ...previous, balance: normalized }));
+    if (demoBalanceRef.current) demoBalanceRef.current.pan.value = normalized / 50;
+  }, []);
+
+  const setBass = useCallback((value: number) => {
+    const normalized = Math.max(-10, Math.min(10, value));
+    setTone(previous => ({ ...previous, bass: normalized }));
+    if (demoBassRef.current) demoBassRef.current.gain.value = normalized;
+  }, []);
+
+  const setTreble = useCallback((value: number) => {
+    const normalized = Math.max(-10, Math.min(10, value));
+    setTone(previous => ({ ...previous, treble: normalized }));
+    if (demoTrebleRef.current) demoTrebleRef.current.gain.value = normalized;
+  }, []);
+
   const setShuffle = useCallback(async (value: boolean) => {
     try {
       setPlayback(previous => ({ ...previous, shuffle: value }));
@@ -488,6 +541,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     setDemoFinished(false);
     stoppedRef.current = false;
     setPlayback(previous => ({ ...previous, track: demoTrack, duration: demoTrack.duration_ms, position: 0, isPlaying: true, stopped: false, queueIndex: 0, queueLength: 1 }));
+    await demoAudioContextRef.current?.resume();
     await audio.play();
   }, []);
 
@@ -499,12 +553,13 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     setAuthenticated(false);
     setDemo(false);
     setDemoFinished(false);
+    setTone({ balance: 0, bass: 0, treble: 0 });
     setProfile(null);
     setLibrary({ playlists: [], albums: [], artists: [], tracks: [] });
     setPlayback(initialPlayback);
   }, []);
 
   const playerReady = demo || Boolean(deviceId);
-  const value = useMemo<SpotifyContextValue>(() => ({ authenticated, demo, ready, playerReady, profile, demoFinished, playback, deviceId, library, login: beginSpotifyLogin, enterDemo, restartDemo, logout, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, stop, previous, next, seek, setVolume, setShuffle, setRepeat, toggleLike, liked, error, clearError: () => setError("") }), [authenticated, demo, ready, playerReady, profile, demoFinished, playback, deviceId, library, enterDemo, restartDemo, logout, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, stop, previous, next, seek, setVolume, setShuffle, setRepeat, toggleLike, liked, error]);
+  const value = useMemo<SpotifyContextValue>(() => ({ authenticated, demo, ready, playerReady, profile, demoFinished, tone, playback, deviceId, library, login: beginSpotifyLogin, enterDemo, restartDemo, logout, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, stop, previous, next, seek, setVolume, setBalance, setBass, setTreble, setShuffle, setRepeat, toggleLike, liked, error, clearError: () => setError("") }), [authenticated, demo, ready, playerReady, profile, demoFinished, tone, playback, deviceId, library, enterDemo, restartDemo, logout, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, stop, previous, next, seek, setVolume, setBalance, setBass, setTreble, setShuffle, setRepeat, toggleLike, liked, error]);
   return <SpotifyContext.Provider value={value}>{children}</SpotifyContext.Provider>;
 }
