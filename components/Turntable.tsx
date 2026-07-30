@@ -24,7 +24,14 @@ export function Turntable() {
           <span className="record-prompt">SELECIONE UMA MÚSICA</span>
         )}
       </div>
-      <Tonearm trackId={playback.track?.id || ""} position={playback.position} duration={playback.duration} hasTrack={Boolean(playback.track) && !playback.stopped} playing={playback.isPlaying} />
+      <Tonearm
+        position={playback.position}
+        duration={playback.duration}
+        queueIndex={playback.queueIndex}
+        queueLength={playback.queueLength}
+        hasTrack={Boolean(playback.track) && !playback.stopped}
+        playing={playback.isPlaying}
+      />
       <div className="deck-controls">
         <button className="power-knob" onClick={playback.track ? toggle : activateDevice} aria-label={playback.track ? (playback.isPlaying ? "Pausar" : "Iniciar reprodução") : "Ativar toca-discos"}><i className={playerReady ? "on" : ""} /></button>
         <div className="rpm-switch"><button className={rpm === 33 ? "active" : ""} onClick={() => setRpm(33)}>33</button><button className={rpm === 45 ? "active" : ""} onClick={() => setRpm(45)}>45</button><small>RPM</small></div>
