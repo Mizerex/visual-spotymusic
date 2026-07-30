@@ -11,8 +11,12 @@ export function Turntable() {
     <div className="turntable-topline"><span className="model">MM-77 <small>DIRECT DRIVE</small></span><span className={`status-light ${playback.isPlaying ? "on" : ""}`}><i /> {playback.isPlaying ? "PLAYING" : "STANDBY"}</span></div>
     <div className="deck">
       <div className="wood-grain" />
+      <div className="platter-lamp" aria-hidden="true"><i /></div>
       <div className={`platter ${playback.track && !playback.stopped ? "has-record" : "waiting-record"}`}>
+        <div className="platter-mat" aria-hidden="true" />
         <div className="platter-dots" />
+        <img className="platter-brand" src="/visual-spotymusic-platter-logo.png" alt="" aria-hidden="true" />
+        <span className="platter-spindle" aria-hidden="true" />
         {playback.track ? (
           <Vinyl
             playing={playback.isPlaying}

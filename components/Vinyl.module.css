@@ -1,5 +1,6 @@
 .perspective {
   position: absolute;
+  z-index: 4;
   inset: 4%;
   border-radius: 50%;
   filter: drop-shadow(0 8px 8px rgba(0,0,0,.68));
