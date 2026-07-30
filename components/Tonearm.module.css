@@ -1,9 +1,9 @@
 .assembly {
   position: absolute;
-  right: 0.6%;
-  top: 5.2%;
-  width: 31%;
-  height: 76%;
+  right: 0.2%;
+  top: 3.5%;
+  width: 32%;
+  height: 80%;
   pointer-events: none;
   filter: drop-shadow(0 10px 8px rgba(20, 10, 5, 0.42));
 }
@@ -49,9 +49,9 @@
 .arm {
   position: absolute;
   right: 28%;
-  top: 11%;
-  width: 18px;
-  height: 82%;
+  top: 10%;
+  width: 20px;
+  height: 86%;
   transform-origin: 50% 2%;
   transition: transform 1.1s cubic-bezier(.22,.61,.36,1);
   z-index: 6;
@@ -73,10 +73,10 @@
 
 .tube {
   position: absolute;
-  left: 5px;
+  left: 6px;
   top: 3%;
-  width: 7px;
-  height: 82%;
+  width: 8px;
+  height: 84%;
   border-radius: 7px;
   background:
     linear-gradient(90deg, #3b3a37 0%, #8e8a82 17%, #f1e9db 43%, #b7b1a7 63%, #5e5b55 83%, #292825 100%);
@@ -132,11 +132,11 @@
 
 .headshell {
   position: absolute;
-  bottom: 0;
-  left: -7px;
-  width: 31px;
-  height: 14%;
-  min-height: 38px;
+  bottom: -2%;
+  left: -9px;
+  width: 37px;
+  height: 15%;
+  min-height: 42px;
   border-radius: 3px 3px 5px 5px;
   transform: rotate(-7deg);
   transform-origin: 50% 0;
@@ -171,9 +171,9 @@
 .stylus {
   position: absolute;
   left: calc(50% - 1px);
-  bottom: -9px;
+  bottom: -11px;
   width: 2px;
-  height: 10px;
+  height: 12px;
   transform: rotate(10deg);
   transform-origin: 50% 0;
   background: linear-gradient(#d4c9b8, #5c5148);
