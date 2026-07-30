@@ -3,6 +3,21 @@
   inset: 4%;
   border-radius: 50%;
   filter: drop-shadow(0 8px 8px rgba(0,0,0,.68));
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0);
+  transform-origin: 58% 42%;
+  transition:
+    opacity .42s ease .04s,
+    transform .68s cubic-bezier(.22,.61,.36,1) .04s,
+    filter .5s ease .04s;
+}
+
+.removed {
+  opacity: 0;
+  transform: translate3d(18%, -11%, 0) scale(.78) rotate(9deg);
+  filter: drop-shadow(15px 18px 12px rgba(0,0,0,.22));
+  pointer-events: none;
+  transition-delay: .48s;
 }
 
 .vinyl {
@@ -113,4 +128,8 @@
   .perspective { inset: 4%; }
   .label { inset: 34%; }
   .spindle { width: 7px; height: 7px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perspective { transition: none; }
 }
