@@ -340,44 +340,8 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   box-shadow:0 20px 55px rgba(0,0,0,.55);
 }
 .ad-slot .adsbygoogle { min-height:inherit; }
-.ad-label {
-  position:absolute;
-  z-index:2;
-  top:8px;
-  left:10px;
-  color:#75695d;
-  font-size:8px;
-  font-weight:700;
-  letter-spacing:.18em;
-  pointer-events:none;
-}
-.ad-slot--placeholder {
-  display:grid;
-  place-items:center;
-  padding:34px 24px 24px;
-  text-align:center;
-}
-.ad-slot--placeholder::before {
-  content:"";
-  position:absolute;
-  inset:0;
-  opacity:.08;
-  background:repeating-linear-gradient(135deg,transparent 0 9px,#d7a06f 10px,transparent 11px 20px);
-}
-.ad-placeholder-copy { position:relative; z-index:1; }
-.ad-placeholder-copy strong {
-  display:block;
-  color:#bda98f;
-  font:22px/1.1 "Libre Caslon Display",serif;
-}
-.ad-placeholder-copy small {
-  display:block;
-  max-width:220px;
-  margin:8px auto 0;
-  color:#70665b;
-  font-size:10px;
-  line-height:1.5;
-}
+.ad-slot--pending { visibility:hidden; }
+.ad-slot--filled { visibility:visible; }
 @media(max-width:980px) {
   .login-screen { overflow:auto; }
   .login-layout {
@@ -392,5 +356,4 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   .login-screen { padding:18px; }
   .login-layout { gap:14px; }
   .login-ad--banner { min-height:100px; }
-  .ad-placeholder-copy strong { font-size:19px; }
 }

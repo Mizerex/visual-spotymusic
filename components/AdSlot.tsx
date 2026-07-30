@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { isValidAdSenseClientId, isValidAdSenseSlotId } from "@/lib/adsense";
 
 type AdSlotProps = {
   className?: string;
@@ -13,42 +14,50 @@ export function AdSlot({
   className = "",
   format = "auto",
   slot,
-  title = "Espaço publicitário",
+  title = "Publicidade",
 }: AdSlotProps) {
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
   const slotId = slot?.trim();
-  const configured = Boolean(clientId && slotId);
+  const configured = isValidAdSenseClientId(clientId) && isValidAdSenseSlotId(slotId);
   const initialized = useRef(false);
+  const elementRef = useRef<HTMLModElement>(null);
+  const [filled, setFilled] = useState(false);
 
   useEffect(() => {
-    if (!configured || initialized.current) return;
+    if (!configured) return;
 
-    try {
-      const adsWindow = window as typeof window & { adsbygoogle?: Record<string, unknown>[] };
-      adsWindow.adsbygoogle = adsWindow.adsbygoogle ?? [];
-      adsWindow.adsbygoogle.push({});
-      initialized.current = true;
-    } catch {
-      // O provedor pode ainda não ter carregado. O slot permanece disponível.
+    const element = elementRef.current;
+    if (!element) return;
+
+    const updateVisibility = () => setFilled(element.dataset.adStatus === "filled");
+    const observer = new MutationObserver(updateVisibility);
+    observer.observe(element, { attributes: true, attributeFilter: ["data-ad-status"] });
+    updateVisibility();
+
+    if (!initialized.current) {
+      try {
+        const adsWindow = window as typeof window & { adsbygoogle?: Record<string, unknown>[] };
+        adsWindow.adsbygoogle = adsWindow.adsbygoogle ?? [];
+        adsWindow.adsbygoogle.push({});
+        initialized.current = true;
+      } catch {
+        initialized.current = false;
+      }
     }
+
+    return () => observer.disconnect();
   }, [configured]);
 
-  if (!configured) {
-    return (
-      <aside className={`ad-slot ad-slot--placeholder ${className}`.trim()} aria-label={title}>
-        <span className="ad-label">PUBLICIDADE</span>
-        <div className="ad-placeholder-copy">
-          <strong>Espaço reservado</strong>
-          <small>O anúncio aparecerá após configurar o provedor.</small>
-        </div>
-      </aside>
-    );
-  }
+  if (!configured) return null;
 
   return (
-    <aside className={`ad-slot ${className}`.trim()} aria-label={title}>
-      <span className="ad-label">PUBLICIDADE</span>
+    <aside
+      className={`ad-slot ad-slot--${filled ? "filled" : "pending"} ${className}`.trim()}
+      aria-label={title}
+      aria-hidden={!filled}
+    >
       <ins
+        ref={elementRef}
         className="adsbygoogle"
         style={{ display: "block", width: "100%" }}
         data-ad-client={clientId}

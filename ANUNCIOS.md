@@ -15,6 +15,10 @@ NEXT_PUBLIC_ADSENSE_LOGIN_RECTANGLE_SLOT=0000000000
 NEXT_PUBLIC_ADSENSE_LOGIN_BANNER_SLOT=0000000000
 ```
 
-Sem esses identificadores, a interface mostra apenas áreas de demonstração com a mensagem “Espaço reservado”. Nenhuma chave secreta deve ser adicionada ao projeto.
+Sem um Publisher ID válido e pelo menos um slot válido, o script do AdSense não é carregado. Slots não configurados ou não preenchidos não exibem rótulos, placeholders ou blocos vazios. Nenhuma chave secreta deve ser adicionada ao projeto.
+
+O Publisher ID precisa usar o formato `ca-pub-` seguido de 16 dígitos. IDs de slot aceitam somente dígitos. Mantenha os valores de produção nas variáveis da hospedagem, não no código-fonte.
+
+O arquivo `public/ads.txt` deve ser criado somente com a linha apresentada pelo próprio AdSense. Não use os números fictícios deste guia.
 
 Antes de ativar anúncios reais, confirme a aprovação do domínio no provedor e revise as regras de consentimento, privacidade e anúncios aplicáveis ao público do site.
