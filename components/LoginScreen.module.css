@@ -46,14 +46,14 @@
 }
 
 .layout {
-  width: min(1100px, 100%);
+  width: min(1180px, 100%);
   min-height: calc(100vh - clamp(32px, 6vw, 68px));
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 560px) 280px;
+  grid-template-columns: 280px minmax(0, 560px) 280px;
   grid-template-areas:
-    "card rectangle"
-    "banner banner";
+    "rectangle card ."
+    "banner banner banner";
   justify-content: center;
   align-content: center;
   align-items: center;
@@ -257,7 +257,7 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes cardEnter { from { opacity: 0; transform: translateY(14px) scale(.99); } to { opacity: 1; transform: none; } }
 
-@media (max-width: 980px) {
+@media (max-width: 1180px) {
   .screen { overflow-y: auto; }
   .layout {
     grid-template-columns: minmax(0, 560px);

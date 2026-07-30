@@ -34,15 +34,7 @@ export function AdSlot({
   }, [configured]);
 
   if (!configured) {
-    return (
-      <aside className={`ad-slot ad-slot--placeholder ${className}`.trim()} aria-label={title}>
-        <span className="ad-label">PUBLICIDADE</span>
-        <div className="ad-placeholder-copy">
-          <strong>Espaço reservado</strong>
-          <small>O anúncio aparecerá após configurar o provedor.</small>
-        </div>
-      </aside>
-    );
+    return null;
   }
 
   return (
