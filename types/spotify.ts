@@ -1,4 +1,5 @@
 export type SpotifyImage = { url: string; width?: number; height?: number };
+export type LibraryCategory = "playlists" | "albums" | "artists" | "tracks";
 
 export type SpotifyTrack = {
   id: string;
@@ -25,6 +26,9 @@ export type LibraryItem = {
 export type PlaybackSnapshot = {
   track: SpotifyTrack | null;
   isPlaying: boolean;
+  stopped: boolean;
+  queueIndex: number;
+  queueLength: number;
   position: number;
   duration: number;
   volume: number;

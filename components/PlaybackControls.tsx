@@ -1,13 +1,16 @@
 "use client";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 export function PlaybackControls() {
-  const { playback, toggle, previous, next, setShuffle, setRepeat } = useSpotifyAuth();
+  const { playback, toggle, stop, previous, next, setShuffle, setRepeat } = useSpotifyAuth();
+  const unavailable = !playback.track;
+  const knownQueue = playback.queueLength > 0;
   const cycleRepeat = () => setRepeat(playback.repeat === "off" ? "context" : playback.repeat === "context" ? "track" : "off");
   return <div className="playback-controls">
-    <button className={playback.shuffle ? "active" : ""} onClick={() => setShuffle(!playback.shuffle)} aria-label="Aleatório">⌘</button>
-    <button onClick={previous} aria-label="Faixa anterior">◀│</button>
-    <button className="main-play" onClick={toggle} aria-label={playback.isPlaying ? "Pausar" : "Reproduzir"}>{playback.isPlaying ? "Ⅱ" : "▶"}</button>
-    <button onClick={next} aria-label="Próxima faixa">│▶</button>
-    <button className={playback.repeat !== "off" ? "active" : ""} onClick={cycleRepeat} aria-label="Repetir">↻{playback.repeat === "track" ? <sup>1</sup> : null}</button>
+    <button disabled={unavailable} className={playback.shuffle ? "active" : ""} onClick={() => setShuffle(!playback.shuffle)} aria-label="Ativar ou desativar reprodução aleatória" aria-pressed={playback.shuffle}>⌘</button>
+    <button disabled={unavailable || (knownQueue && playback.queueIndex <= 0)} onClick={previous} aria-label="Faixa anterior">◀│</button>
+    <button disabled={unavailable} className="main-play" onClick={toggle} aria-label={playback.isPlaying ? "Pausar" : "Reproduzir"}>{playback.isPlaying ? "Ⅱ" : "▶"}</button>
+    <button disabled={unavailable || playback.stopped} className="stop-control" onClick={stop} aria-label="Parar música e recolher o braço">■</button>
+    <button disabled={unavailable || (knownQueue && playback.queueIndex >= playback.queueLength - 1)} onClick={next} aria-label="Próxima faixa">│▶</button>
+    <button disabled={unavailable} className={playback.repeat !== "off" ? "active" : ""} onClick={cycleRepeat} aria-label="Alterar modo de repetição" aria-pressed={playback.repeat !== "off"}>↻{playback.repeat === "track" ? <sup>1</sup> : null}</button>
   </div>;
 }

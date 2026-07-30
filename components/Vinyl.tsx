@@ -8,19 +8,24 @@ export function Vinyl({
   rpm,
   image,
   album,
+  removed,
 }: {
   playing: boolean;
   rpm: 33 | 45;
   image?: string;
   album?: string;
+  removed: boolean;
 }) {
   const ref = useVinylAnimation(playing, rpm);
 
   return (
-    <div className={styles.perspective} aria-label={album ? `Disco do álbum ${album}` : "Disco de vinil"}>
+    <div
+      className={`${styles.perspective} ${removed ? styles.removed : ""}`}
+      aria-label={album ? `Disco do álbum ${album}` : "Disco de vinil"}
+      aria-hidden={removed}
+    >
       <div className={styles.vinyl} ref={ref}>
-        <div className={styles.grooves} />
-        <div className={styles.runout} />
+        <img className={styles.discTexture} src="/vinyl-selected.png" alt="" />
 
         <div className={styles.label}>
           {image ? (

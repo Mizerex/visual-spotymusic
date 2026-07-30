@@ -1,11 +1,30 @@
 "use client";
-import { useRef, useState } from "react";
-export function Knob({ label, initial = 50, min = 0, max = 100, suffix = "" }: { label: string; initial?: number; min?: number; max?: number; suffix?: string }) {
-  const [value, setValue] = useState(initial);
-  const origin = useRef({ y: 0, value: initial });
-  const update = (next: number) => setValue(Math.max(min, Math.min(max, Math.round(next))));
-  const pointerDown = (event: React.PointerEvent) => { origin.current = { y: event.clientY, value }; event.currentTarget.setPointerCapture(event.pointerId); };
-  const pointerMove = (event: React.PointerEvent) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) update(origin.current.value + (origin.current.y - event.clientY) * (max - min) / 120); };
+import { useState } from "react";
+
+type KnobProps = {
+  label: string;
+  initial?: number;
+  value?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  suffix?: string;
+  onChange?: (value: number) => void;
+};
+
+export function Knob({ label, initial = 50, value: controlledValue, min = 0, max = 100, step = 1, suffix = "", onChange }: KnobProps) {
+  const [internalValue, setInternalValue] = useState(initial);
+  const value = controlledValue ?? internalValue;
+  const update = (next: number) => {
+    const normalized = Math.max(min, Math.min(max, Math.round(next / step) * step));
+    if (controlledValue === undefined) setInternalValue(normalized);
+    onChange?.(normalized);
+  };
+  const click = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const upperHalf = event.clientY < bounds.top + bounds.height / 2;
+    update(value + (upperHalf ? step : -step));
+  };
   const degrees = -135 + (value - min) / (max - min) * 270;
-  return <div className="knob-control"><button className="knob" onPointerDown={pointerDown} onPointerMove={pointerMove} onKeyDown={e => { if (e.key === "ArrowUp" || e.key === "ArrowRight") update(value + 1); if (e.key === "ArrowDown" || e.key === "ArrowLeft") update(value - 1); }} aria-label={`${label}: ${value}${suffix}`} style={{ "--knob-angle": `${degrees}deg` } as React.CSSProperties}><i /></button><strong>{label}</strong><small>{value}{suffix}</small></div>;
+  return <div className="knob-control"><button className="knob" onClick={click} onKeyDown={e => { if (e.key === "ArrowUp" || e.key === "ArrowRight") { e.preventDefault(); update(value + step); } if (e.key === "ArrowDown" || e.key === "ArrowLeft") { e.preventDefault(); update(value - step); } }} aria-label={`${label}: ${value}${suffix}. Clique na metade superior para aumentar ou na inferior para diminuir.`} title="Parte superior: aumentar · Parte inferior: diminuir" style={{ "--knob-angle": `${degrees}deg` } as React.CSSProperties}><i /><span className="knob-up" aria-hidden="true">+</span><span className="knob-down" aria-hidden="true">−</span></button><strong>{label}</strong><small>{value}{suffix}</small></div>;
 }

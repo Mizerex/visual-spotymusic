@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build-sites.mjs",
     "start": "serve out -l 3000",
     "lint": "next lint",
     "build:cloudflare": "next build"
