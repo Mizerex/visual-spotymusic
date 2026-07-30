@@ -143,7 +143,7 @@ export function Sidebar({
       </div>}
 
       <footer className={`brand ${styles.brand} ${styles.brandFooter}`}>
-        <img className={styles.logo} src="/visual-spotymusic-logo.png" alt="Visual SpotyMusic" />
+        <img className={styles.logo} src="/visual-spotymusic-icon.png" alt="Visual SpotyMusic" />
       </footer>
     </aside>
   );
