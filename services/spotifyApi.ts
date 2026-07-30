@@ -20,7 +20,11 @@ export async function spotifyApi<T>(path: string, init: RequestInit = {}, retry 
     throw new Error(message);
   }
   if (response.status === 204) return undefined as T;
+  const method = (init.method || "GET").toUpperCase();
+  if (method !== "GET" && method !== "HEAD") return undefined as T;
   const text = await response.text();
   if (!text.trim()) return undefined as T;
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("json")) return text as T;
   return JSON.parse(text) as T;
 }
