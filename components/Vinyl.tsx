@@ -19,6 +19,7 @@ export function Vinyl({
   return (
     <div className={styles.perspective} aria-label={album ? `Disco do álbum ${album}` : "Disco de vinil"}>
       <div className={styles.vinyl} ref={ref}>
+        <img className={styles.discTexture} src="/vinyl-selected.png" alt="" />
         <div className={styles.grooves} />
         <div className={styles.runout} />
 

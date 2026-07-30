@@ -548,3 +548,20 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   .meters { max-width: 520px; }
   .vu-needle { width: 2px; }
 }
+
+.record-prompt {
+  position: absolute;
+  inset: 35%;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(218,160,105,.2);
+  border-radius: 50%;
+  color: #8d7561;
+  background: rgba(13,12,11,.72);
+  font-size: clamp(5px,.55vw,8px);
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.5);
+}
+.platter.has-record .platter-dots { opacity: .28; }

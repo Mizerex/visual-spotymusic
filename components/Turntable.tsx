@@ -11,7 +11,19 @@ export function Turntable() {
     <div className="turntable-topline"><span className="model">MM-77 <small>DIRECT DRIVE</small></span><span className={`status-light ${playback.isPlaying ? "on" : ""}`}><i /> {playback.isPlaying ? "PLAYING" : "STANDBY"}</span></div>
     <div className="deck">
       <div className="wood-grain" />
-      <div className="platter"><div className="platter-dots" /><Vinyl playing={playback.isPlaying} rpm={rpm} image={playback.track?.album.images?.[0]?.url} album={playback.track?.album.name} /></div>
+      <div className={`platter ${playback.track ? "has-record" : "waiting-record"}`}>
+        <div className="platter-dots" />
+        {playback.track ? (
+          <Vinyl
+            playing={playback.isPlaying}
+            rpm={rpm}
+            image={playback.track.album.images?.[0]?.url}
+            album={playback.track.album.name}
+          />
+        ) : (
+          <span className="record-prompt">SELECIONE UMA MÚSICA</span>
+        )}
+      </div>
       <Tonearm position={playback.position} duration={playback.duration} hasTrack={Boolean(playback.track)} playing={playback.isPlaying} />
       <div className="deck-controls">
         <button className="power-knob" onClick={playback.track ? toggle : activateDevice} aria-label={playback.track ? (playback.isPlaying ? "Pausar" : "Iniciar reprodução") : "Ativar toca-discos"}><i className={playerReady ? "on" : ""} /></button>
