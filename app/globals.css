@@ -140,6 +140,21 @@ button:focus-visible, input:focus-visible { outline:2px solid var(--amber); outl
 .mobile-menu { display:none; }.sidebar-backdrop { display:none; }
 .error-toast { position:fixed;z-index:50;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(480px,calc(100% - 30px));display:flex;align-items:center;gap:10px;padding:12px 15px;border:1px solid #784331;background:#261712;color:#e6d5c2;box-shadow:0 8px 25px #000;cursor:pointer;font-size:12px; }.error-toast span { display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#a84e35;font-weight:700; }.error-toast i { margin-left:auto;font-style:normal;color:#8e7c6e; }
 .loading-record { width:80px;height:80px;border-radius:50%;background:repeating-radial-gradient(circle,#151412 0 3px,#34312c 4px 6px);animation:spin 2s linear infinite; }.loading-screen p,.callback-screen p { color:#9e8d78; }.callback-screen { text-align:center; }.callback-screen a { color:#d89355; }
+.callback-logo {
+  width: min(900px, 94vw);
+  height: auto;
+  margin: -190px 0 -210px;
+  object-fit: contain;
+  filter:
+    drop-shadow(1px 0 rgba(255,255,255,.82))
+    drop-shadow(-1px 0 rgba(255,255,255,.82))
+    drop-shadow(0 1px rgba(255,255,255,.82))
+    drop-shadow(0 -1px rgba(255,255,255,.82))
+    drop-shadow(0 9px 22px rgba(0,0,0,.72));
+}
+@media(max-width:620px) {
+  .callback-logo { width: min(760px, 112vw); margin: -160px -6vw -175px; }
+}
 @keyframes spin { to { transform:rotate(360deg); } }
 
 @media (max-width:1100px) {
