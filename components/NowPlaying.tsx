@@ -18,6 +18,14 @@ export function NowPlaying() {
     <ProgressBar position={playback.position} duration={playback.duration} onChange={seek} />
     <PlaybackControls />
     <div className="now-footer"><span>VOLUME</span><VolumeControl value={playback.volume} onChange={setVolume} /></div>
-    <div className="track-details"><p>TRACK INFO <span>›</span></p><div><small>ÁLBUM</small><strong>{track?.album.name || "—"}</strong><small>ARTISTA</small><strong>{track?.artists.map(a => a.name).join(", ") || "—"}</strong></div></div>
+    <div className="hi-fi-system" aria-label="Status do sistema Hi-Fi">
+      <span className={`hi-fi-system-light ${playback.isPlaying ? "active" : ""}`} aria-hidden="true" />
+      <div>
+        <small>HI-FI SYSTEM</small>
+        <strong title={track ? `${track.name} · ${track.album.name}` : "Aguardando seleção"}>
+          {track ? `${track.name} · ${track.album.name}` : "Aguardando seleção"}
+        </strong>
+      </div>
+    </div>
   </aside>;
 }
