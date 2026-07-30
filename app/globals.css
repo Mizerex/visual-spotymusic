@@ -685,50 +685,6 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   letter-spacing: .16em;
 }
 .platter.has-record .platter-dots { opacity: .55; }
-.platter-lamp {
-  position: absolute;
-  z-index: 8;
-  left: 1.25%;
-  bottom: 5.5%;
-  width: 36px;
-  height: 36px;
-  border: 2px solid #11100e;
-  border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%,#d3cec2 0 7%,#69665f 9% 28%,#211f1c 31% 52%,#8b8579 55% 59%,#171512 62%);
-  box-shadow:
-    0 5px 10px rgba(0,0,0,.75),
-    inset 0 1px rgba(255,255,255,.35),
-    0 0 0 1px rgba(196,180,158,.25);
-}
-.platter-lamp i {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  transform: translate(-50%,-50%);
-  background: #ffac55;
-  box-shadow: 0 0 5px #ff9a3d,0 0 14px rgba(255,143,50,.82);
-}
-.platter-lamp::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  left: 17px;
-  bottom: 18px;
-  width: min(41vw,430px);
-  height: min(35vw,350px);
-  border-radius: 50%;
-  transform: rotate(-8deg);
-  transform-origin: left bottom;
-  background: radial-gradient(ellipse at left bottom,rgba(255,174,90,.2),rgba(255,139,53,.075) 33%,transparent 69%);
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
 @media(max-width:780px) {
-  .platter-lamp { width: 29px; height: 29px; bottom: 4%; }
-  .platter-lamp::after { left: 13px; bottom: 14px; width: 52vw; height: 43vw; }
   .platter-brand { left: 13%; width: 58%; }
 }
