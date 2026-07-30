@@ -424,6 +424,7 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   border-bottom: 1px solid rgba(218,153,94,.12);
 }
 .library-console-heading h2 { margin: 3px 0 0; font: 600 23px/1 "Barlow Condensed","DM Sans",sans-serif; }
+.library-console-category { margin: 6px 0 0; color: #d88a4b; font-size: 8px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .library-console-heading>span { color: #6f6257; font-size: 8px; }
 .library-console-list { flex: 1; min-height: 0; overflow: auto; padding: 9px 0; }
 .library-console-list button {

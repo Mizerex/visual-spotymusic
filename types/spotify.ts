@@ -1,4 +1,5 @@
 export type SpotifyImage = { url: string; width?: number; height?: number };
+export type LibraryCategory = "playlists" | "albums" | "artists" | "tracks";
 
 export type SpotifyTrack = {
   id: string;

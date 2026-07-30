@@ -2,16 +2,23 @@
 
 import { useEffect } from "react";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
+import type { LibraryCategory } from "@/types/spotify";
 
 const signalBars = [5, 8, 11, 7, 13, 9, 6, 12, 8, 10, 6, 11];
+const categoryLabels: Record<LibraryCategory, string> = {
+  playlists: "Playlists",
+  albums: "Álbuns",
+  artists: "Artistas",
+  tracks: "Músicas",
+};
 
-export function LibraryConsole() {
+export function LibraryConsole({ category }: { category: LibraryCategory }) {
   const { library, loadLibrary, playItem, playback } = useSpotifyAuth();
-  const items = library.playlists.slice(0, 4);
+  const items = library[category].slice(0, 6);
 
   useEffect(() => {
-    void loadLibrary("playlists");
-  }, [loadLibrary]);
+    void loadLibrary(category);
+  }, [category, loadLibrary]);
 
   return (
     <section className="library-console" aria-label="Biblioteca visual">
@@ -19,8 +26,9 @@ export function LibraryConsole() {
         <div>
           <p className="eyebrow">SUA COLEÇÃO</p>
           <h2>Biblioteca visual</h2>
+          <p className="library-console-category">{categoryLabels[category]}</p>
         </div>
-        <span>{library.playlists.length || "—"} itens</span>
+        <span>{library[category].length || "—"} itens</span>
       </header>
 
       <div className="library-console-list">
@@ -44,7 +52,7 @@ export function LibraryConsole() {
           <div className="library-console-empty">
             <span>♫</span>
             <strong>Sua coleção aparecerá aqui</strong>
-            <small>Escolha Playlists na biblioteca para começar.</small>
+            <small>Escolha {categoryLabels[category]} na biblioteca para começar.</small>
           </div>
         )}
       </div>
