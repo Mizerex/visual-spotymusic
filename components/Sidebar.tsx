@@ -59,11 +59,20 @@ export function Sidebar({
 
   return (
     <aside className={`sidebar ${styles.shell} ${open ? "open" : ""}`} aria-label="Biblioteca do Spotify">
-      <header className={`brand ${styles.brand}`}>
-        <img className={styles.logo} src="/visual-spotymusic-logo.png" alt="Visual SpotyMusic" />
-        <button className="close-sidebar" onClick={onClose} aria-label="Fechar biblioteca">
-          <Icon name="close" />
-        </button>
+      <header className={`profile ${styles.profile} ${styles.profileTop}`}>
+        <span className="avatar">{profile?.display_name?.slice(0, 1).toUpperCase() || "V"}</span>
+        <span>
+          <strong>{profile?.display_name || "Visual Listener"}</strong>
+          <small>{demo ? "Modo demonstração" : playerReady ? "Toca-discos online" : "Conectando ao Spotify"}</small>
+        </span>
+        <div className={styles.profileActions}>
+          <button onClick={logout} aria-label="Desconectar do Spotify" title="Sair">
+            <Icon name="logout" />
+          </button>
+          <button className="close-sidebar" onClick={onClose} aria-label="Fechar biblioteca">
+            <Icon name="close" />
+          </button>
+        </div>
       </header>
 
       <nav aria-label="Navegação principal">
@@ -133,15 +142,8 @@ export function Sidebar({
         )}
       </div>}
 
-      <footer className={`profile ${styles.profile}`}>
-        <span className="avatar">{profile?.display_name?.slice(0, 1).toUpperCase() || "V"}</span>
-        <span>
-          <strong>{profile?.display_name || "Visual Listener"}</strong>
-          <small>{demo ? "Modo demonstração" : playerReady ? "Toca-discos online" : "Conectando ao Spotify"}</small>
-        </span>
-        <button onClick={logout} aria-label="Desconectar do Spotify" title="Sair">
-          <Icon name="logout" />
-        </button>
+      <footer className={`brand ${styles.brand} ${styles.brandFooter}`}>
+        <img className={styles.logo} src="/visual-spotymusic-logo.png" alt="Visual SpotyMusic" />
       </footer>
     </aside>
   );
