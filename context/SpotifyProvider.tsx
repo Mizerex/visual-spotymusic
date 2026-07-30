@@ -87,7 +87,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       player.addListener("playback_error", fail);
       player.addListener("player_state_changed", (state) => {
         if (!state) return;
-        if (stoppedRef.current && state.paused) {
+        if (stoppedRef.current) {
           setPlayback(previous => ({ ...previous, isPlaying: false, stopped: true, position: 0 }));
           return;
         }
@@ -108,8 +108,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       try {
         const current = await spotifyApi<any>("/me/player");
         if (!current?.item) return;
-        if (stoppedRef.current && !current.is_playing) return;
-        if (current.is_playing) stoppedRef.current = false;
+        if (stoppedRef.current) return;
         setPlayback(previous => ({ ...previous, track: current.item, isPlaying: Boolean(current.is_playing), stopped: false, position: current.progress_ms || 0, duration: current.item.duration_ms || 0, shuffle: Boolean(current.shuffle_state), repeat: current.repeat_state || "off" }));
       } catch { /* O SDK continua sendo a fonte principal. */ }
     };
@@ -219,55 +218,72 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   }, [demo, deviceId, fail]);
 
   const toggle = useCallback(async () => {
+    const wasPlaying = playback.isPlaying;
+    const wasStopped = playback.stopped;
     try {
       if (!playback.track) throw new Error("Escolha uma música antes de apertar Play.");
+      if (!demo && (!playerRef.current || !deviceId)) throw new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos.");
+      const shouldPlay = !playback.isPlaying;
       stoppedRef.current = false;
-      setPlayback(previous => ({ ...previous, stopped: false }));
-      if (demo) setPlayback(previous => ({ ...previous, isPlaying: !previous.isPlaying, stopped: false }));
-      else {
-        await playerRef.current?.activateElement();
-        await playerRef.current?.togglePlay();
-      }
-    } catch (reason) { fail(reason); }
-  }, [demo, playback.track, fail]);
+      setPlayback(previous => ({ ...previous, isPlaying: shouldPlay, stopped: false }));
+      if (demo) return;
+      await playerRef.current?.activateElement();
+      await spotifyApi(`/me/player/${shouldPlay ? "play" : "pause"}?device_id=${encodeURIComponent(deviceId)}`, { method: "PUT" });
+    } catch (reason) {
+      stoppedRef.current = wasStopped;
+      setPlayback(previous => ({ ...previous, isPlaying: wasPlaying, stopped: wasStopped }));
+      fail(reason);
+    }
+  }, [demo, deviceId, playback.isPlaying, playback.stopped, playback.track, fail]);
 
   const stop = useCallback(async () => {
     if (!playback.track) return;
     stoppedRef.current = true;
     setPlayback(previous => ({ ...previous, isPlaying: false, stopped: true, position: 0 }));
+    if (demo) return;
     try {
-      if (!demo) {
-        await playerRef.current?.activateElement();
-        await spotifyApi(`/me/player/pause${deviceId ? `?device_id=${deviceId}` : ""}`, { method: "PUT" });
-        await playerRef.current?.seek(0);
-      }
+      if (!playerRef.current || !deviceId) throw new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos.");
+      await playerRef.current.activateElement();
+      await spotifyApi(`/me/player/pause?device_id=${encodeURIComponent(deviceId)}`, { method: "PUT" });
+      await spotifyApi(`/me/player/seek?position_ms=0&device_id=${encodeURIComponent(deviceId)}`, { method: "PUT" });
     } catch (reason) {
-      stoppedRef.current = false;
       fail(reason);
     }
   }, [demo, deviceId, playback.track, fail]);
 
   const previous = useCallback(async () => {
     try {
+      if (!playback.track) throw new Error("Escolha uma música antes de usar os controles.");
       stoppedRef.current = false;
       if (demo) {
         const i = Math.max(0, demoTracks.findIndex(track => track.id === playback.track?.id));
         const track = demoTracks[(i - 1 + demoTracks.length) % demoTracks.length];
         setPlayback(previousState => ({ ...previousState, track, duration: track.duration_ms, position: 0, isPlaying: true, stopped: false }));
-      } else await playerRef.current?.previousTrack();
+        return;
+      }
+      if (!playerRef.current || !deviceId) throw new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos.");
+      await playerRef.current.activateElement();
+      await spotifyApi(`/me/player/previous?device_id=${encodeURIComponent(deviceId)}`, { method: "POST" });
+      setPlayback(previousState => ({ ...previousState, position: 0, stopped: false }));
     } catch (reason) { fail(reason); }
-  }, [demo, playback.track, fail]);
+  }, [demo, deviceId, playback.track, fail]);
 
   const next = useCallback(async () => {
     try {
+      if (!playback.track) throw new Error("Escolha uma música antes de usar os controles.");
       stoppedRef.current = false;
       if (demo) {
         const i = Math.max(0, demoTracks.findIndex(track => track.id === playback.track?.id));
         const track = demoTracks[(i + 1) % demoTracks.length];
         setPlayback(previousState => ({ ...previousState, track, duration: track.duration_ms, position: 0, isPlaying: true, stopped: false }));
-      } else await playerRef.current?.nextTrack();
+        return;
+      }
+      if (!playerRef.current || !deviceId) throw new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos.");
+      await playerRef.current.activateElement();
+      await spotifyApi(`/me/player/next?device_id=${encodeURIComponent(deviceId)}`, { method: "POST" });
+      setPlayback(previousState => ({ ...previousState, position: 0, stopped: false }));
     } catch (reason) { fail(reason); }
-  }, [demo, playback.track, fail]);
+  }, [demo, deviceId, playback.track, fail]);
 
   const seek = useCallback(async (ms: number) => {
     try {
@@ -286,16 +302,22 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const setShuffle = useCallback(async (value: boolean) => {
     try {
       setPlayback(previous => ({ ...previous, shuffle: value }));
-      if (!demo) await spotifyApi(`/me/player/shuffle?state=${value}`, { method: "PUT" });
+      if (!demo) {
+        if (!deviceId) throw new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos.");
+        await spotifyApi(`/me/player/shuffle?state=${value}&device_id=${encodeURIComponent(deviceId)}`, { method: "PUT" });
+      }
     } catch (reason) { fail(reason); }
-  }, [demo, fail]);
+  }, [demo, deviceId, fail]);
 
   const setRepeat = useCallback(async (value: PlaybackSnapshot["repeat"]) => {
     try {
       setPlayback(previous => ({ ...previous, repeat: value }));
-      if (!demo) await spotifyApi(`/me/player/repeat?state=${value}`, { method: "PUT" });
+      if (!demo) {
+        if (!deviceId) throw new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos.");
+        await spotifyApi(`/me/player/repeat?state=${value}&device_id=${encodeURIComponent(deviceId)}`, { method: "PUT" });
+      }
     } catch (reason) { fail(reason); }
-  }, [demo, fail]);
+  }, [demo, deviceId, fail]);
   useEffect(() => {
     const track = playback.track;
     if (!track) {
