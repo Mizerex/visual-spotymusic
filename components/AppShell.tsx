@@ -8,7 +8,6 @@ import { NowPlaying } from "./NowPlaying";
 import { AnalogPanel } from "./AnalogPanel";
 import { ErrorToast } from "./ErrorToast";
 import { Icon } from "./Icon";
-import { Topbar } from "./Topbar";
 import { LibraryConsole } from "./LibraryConsole";
 import type { LibraryCategory } from "@/types/spotify";
 
@@ -36,7 +35,7 @@ export function AppShell() {
       }}
     />
     {sidebarOpen && <button className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-label="Fechar biblioteca" />}
-    <main className="studio"><Topbar onMenu={() => setSidebarOpen(true)} /><div className="top-grid"><LibraryConsole category={libraryCategory} mode={mainView} /><Turntable /><NowPlaying /></div><AnalogPanel /></main>
+    <main className="studio"><div className="top-grid"><LibraryConsole category={libraryCategory} mode={mainView} /><Turntable /><NowPlaying /></div><AnalogPanel /></main>
     <ErrorToast />
   </div>;
 }

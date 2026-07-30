@@ -255,7 +255,7 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 .topbar-track { max-width:420px;height:38px;border-radius:22px;border-color:#3b2b1e;background:#090807; }
 .topbar-track span.playing,.topbar-nav button:hover { color:var(--console-orange); }
 .topbar-status.playing i { background:#3be377;box-shadow:0 0 12px #2fe06e; }
-.top-grid { height:clamp(520px,calc(100vh - 258px),690px);grid-template-columns:minmax(560px,1fr) minmax(330px,390px);gap:8px;max-width:none;margin:0; }
+.top-grid { height:clamp(500px,calc(100vh - 186px),760px);grid-template-columns:minmax(560px,1fr) minmax(330px,390px);gap:8px;max-width:none;margin:0; }
 .turntable-section { min-height:0;display:flex;flex-direction:column; }
 .deck { flex:1;min-height:0;max-height:none;aspect-ratio:auto;border:10px solid #1b100b;border-radius:5px;background:linear-gradient(105deg,#4e2d1c,#2b1911 45%,#130d0a);box-shadow:inset 0 0 0 2px #080605,inset 0 1px rgba(255,211,168,.14),0 18px 45px #000; }
 .deck::before { inset:8px;border-color:rgba(223,160,100,.12);border-radius:3px; }
@@ -401,7 +401,7 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 
 /* Premium layout pass — referência de posicionamento, identidade própria preservada */
 .top-grid {
-  height: clamp(520px, calc(100vh - 258px), 690px);
+  height: clamp(500px, calc(100vh - 186px), 760px);
   grid-template-columns: minmax(235px,.72fr) minmax(500px,1.62fr) minmax(300px,.86fr);
   gap: 8px;
 }
@@ -512,6 +512,25 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
   .top-grid { height: auto; grid-template-columns: minmax(210px,.65fr) minmax(430px,1.35fr); }
   .now-playing { grid-column: 1/-1; height: auto; }
   .library-console,.turntable-section { min-height: 520px; }
+}
+@media(max-width:1100px) {
+  .mobile-menu {
+    position:fixed;
+    z-index:30;
+    top:12px;
+    left:12px;
+    width:38px;
+    height:38px;
+    display:grid;
+    place-items:center;
+    padding:0;
+    border:1px solid #493522;
+    border-radius:8px;
+    color:#d9995f;
+    background:#0b0907;
+    box-shadow:0 6px 18px rgba(0,0,0,.55);
+  }
+  .mobile-menu span { display:none; }
 }
 @media(max-width:780px) {
   .top-grid { display: flex; }
