@@ -688,3 +688,97 @@ html,body { font-family:Inter,"DM Sans",sans-serif; background:#070706; }
 @media(max-width:780px) {
   .platter-brand { left: 13%; width: 58%; }
 }
+
+/* Encerramento suave do modo demonstração */
+.demo-complete-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 3, 2, .72);
+  backdrop-filter: blur(5px) saturate(.72);
+  animation: demoBackdropIn .55s ease both;
+}
+.demo-complete-dialog {
+  width: min(440px, 100%);
+  padding: 30px;
+  border: 1px solid rgba(214, 139, 72, .42);
+  border-radius: 14px;
+  color: #d8cec3;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0, rgba(67, 117, 43, .13), transparent 42%),
+    linear-gradient(145deg, #17130f, #090806 72%);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .82), inset 0 1px rgba(255, 255, 255, .045);
+  animation: demoDialogIn .55s cubic-bezier(.2, .8, .2, 1) both;
+}
+.demo-complete-dialog > img {
+  width: 92px;
+  height: 92px;
+  margin: -2px auto 10px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgba(20, 190, 55, .12));
+}
+.demo-complete-dialog .eyebrow { color: #cf8b52; }
+.demo-complete-dialog h2 {
+  margin: 8px 0 10px;
+  color: #f0e8df;
+  font-size: clamp(24px, 4vw, 34px);
+  letter-spacing: -.035em;
+}
+.demo-complete-dialog > p:not(.eyebrow) {
+  max-width: 350px;
+  margin: 0 auto;
+  color: #a89b8f;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.demo-complete-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+.demo-complete-actions button {
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease, border-color .18s ease;
+}
+.demo-complete-actions button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
+.demo-complete-actions button:disabled { cursor: wait; opacity: .62; }
+.demo-complete-primary {
+  border: 1px solid #45d34a;
+  color: #071006;
+  background: linear-gradient(180deg, #5ce65b, #25b53a);
+  box-shadow: 0 8px 24px rgba(34, 194, 55, .17);
+}
+.demo-complete-secondary {
+  border: 1px solid rgba(207, 139, 82, .48);
+  color: #d9b48f;
+  background: rgba(26, 19, 14, .86);
+}
+.demo-complete-dialog > small {
+  display: block;
+  margin-top: 14px;
+  color: #e49a75;
+  line-height: 1.45;
+}
+@keyframes demoBackdropIn { from { opacity: 0; } }
+@keyframes demoDialogIn { from { opacity: 0; transform: translateY(16px) scale(.975); } }
+
+@media(max-width:520px) {
+  .demo-complete-backdrop { padding: 14px; }
+  .demo-complete-dialog { padding: 24px 18px; }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .demo-complete-backdrop,
+  .demo-complete-dialog { animation: none; }
+}
