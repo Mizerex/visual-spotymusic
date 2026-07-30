@@ -33,6 +33,23 @@ const demoTracks: SpotifyTrack[] = [
 
 const mapTrack = (track: SpotifyTrack): LibraryItem => ({ id: track.id, uri: track.uri, name: track.name, subtitle: `${track.artists.map(a => a.name).join(", ")} · ${track.album.name}`, image: track.album.images?.[0]?.url, kind: "track", track });
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const withPage = (path: string, limit: number, offset: number) => `${path}${path.includes("?") ? "&" : "?"}limit=${limit}&offset=${offset}`;
+
+async function loadEveryOffsetPage(path: string, getItems: (data: any) => any[], getTotal: (data: any) => number) {
+  const limit = 50;
+  const collected: any[] = [];
+  let offset = 0;
+
+  while (true) {
+    const data = await spotifyApi<any>(withPage(path, limit, offset));
+    const page = getItems(data) || [];
+    collected.push(...page);
+    if (!page.length || collected.length >= getTotal(data) || page.length < limit) break;
+    offset += page.length;
+  }
+
+  return collected;
+}
 
 export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
@@ -115,12 +132,18 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       setLibrary(current => ({ ...current, [category]: mock[category] })); return;
     }
     try {
-      let data: any;
-      if (category === "playlists") data = await spotifyApi<any>("/me/playlists?limit=30");
-      if (category === "albums") data = await spotifyApi<any>("/me/albums?limit=30");
-      if (category === "artists") data = await spotifyApi<any>("/me/following?type=artist&limit=30");
-      if (category === "tracks") data = await spotifyApi<any>("/me/tracks?limit=30");
-      const source = category === "artists" ? data.artists.items : data.items;
+      let source: any[] = [];
+      if (category === "playlists") source = await loadEveryOffsetPage("/me/playlists", data => data.items, data => data.total);
+      if (category === "albums") source = await loadEveryOffsetPage("/me/albums", data => data.items, data => data.total);
+      if (category === "tracks") source = await loadEveryOffsetPage("/me/tracks", data => data.items, data => data.total);
+      if (category === "artists") {
+        let after = "";
+        do {
+          const data = await spotifyApi<any>(`/me/following?type=artist&limit=50${after ? `&after=${encodeURIComponent(after)}` : ""}`);
+          source.push(...(data.artists?.items || []));
+          after = data.artists?.cursors?.after || "";
+        } while (after);
+      }
       const items: LibraryItem[] = source.map((raw: any) => {
         const value = raw.track || raw.album || raw;
         if (category === "tracks") return mapTrack(value);
@@ -135,16 +158,16 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     if (demo) return demoTracks.map(mapTrack);
     try {
       if (item.kind === "playlist") {
-        const data = await spotifyApi<any>(`/playlists/${item.id}/items?limit=50`);
-        return (data.items || []).map((entry: any) => entry.item || entry.track).filter((entry: any) => entry?.type !== "episode").map(mapTrack);
+        const entries = await loadEveryOffsetPage(`/playlists/${item.id}/items`, data => data.items, data => data.total);
+        return entries.map((entry: any) => entry.item || entry.track).filter((entry: any) => entry?.type !== "episode").map(mapTrack);
       }
       if (item.kind === "album") {
         const data = await spotifyApi<any>(`/albums/${item.id}`);
-        const tracks = data.items?.items || data.tracks?.items || [];
+        const tracks = await loadEveryOffsetPage(`/albums/${item.id}/tracks`, page => page.items, page => page.total);
         return tracks.map((track: any) => mapTrack({ ...track, album: { id: data.id || item.id, name: data.name || item.name, images: data.images || (item.image ? [{ url: item.image }] : []), total_tracks: data.total_tracks } }));
       }
-      const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(`artist:${item.name}`)}&type=track&limit=10`);
-      return (data.tracks?.items || []).map(mapTrack);
+      const data = await spotifyApi<any>(`/artists/${item.id}/top-tracks?market=from_token`);
+      return (data.tracks || []).map(mapTrack);
     } catch (reason) {
       fail(reason);
       return [];

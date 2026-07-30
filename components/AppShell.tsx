@@ -12,10 +12,13 @@ import { Topbar } from "./Topbar";
 import { LibraryConsole } from "./LibraryConsole";
 import type { LibraryCategory } from "@/types/spotify";
 
+export type MainView = "library" | "explore" | "radio";
+
 export function AppShell() {
   const { authenticated, ready, toggle } = useSpotifyAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [libraryCategory, setLibraryCategory] = useState<LibraryCategory>("playlists");
+  const [mainView, setMainView] = useState<MainView>("library");
   useEffect(() => { const handler = (event: KeyboardEvent) => { if (event.code === "Space" && !["INPUT", "BUTTON"].includes((event.target as HTMLElement).tagName)) { event.preventDefault(); toggle(); } }; window.addEventListener("keydown", handler); return () => window.removeEventListener("keydown", handler); }, [toggle]);
   if (!ready) return <main className="loading-screen"><div className="loading-record" /><p>Aquecendo as válvulas...</p></main>;
   if (!authenticated) return <LoginScreen />;
@@ -25,10 +28,15 @@ export function AppShell() {
       open={sidebarOpen}
       onClose={() => setSidebarOpen(false)}
       activeCategory={libraryCategory}
-      onCategoryChange={setLibraryCategory}
+      activeView={mainView}
+      onViewChange={setMainView}
+      onCategoryChange={category => {
+        setLibraryCategory(category);
+        setMainView("library");
+      }}
     />
     {sidebarOpen && <button className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-label="Fechar biblioteca" />}
-    <main className="studio"><Topbar onMenu={() => setSidebarOpen(true)} /><div className="top-grid"><LibraryConsole category={libraryCategory} /><Turntable /><NowPlaying /></div><AnalogPanel /></main>
+    <main className="studio"><Topbar onMenu={() => setSidebarOpen(true)} /><div className="top-grid"><LibraryConsole category={libraryCategory} mode={mainView} /><Turntable /><NowPlaying /></div><AnalogPanel /></main>
     <ErrorToast />
   </div>;
 }

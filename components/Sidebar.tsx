@@ -6,6 +6,7 @@ import { Search } from "./Search";
 import { LibraryList } from "./LibraryList";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 import type { LibraryCategory, LibraryItem } from "@/types/spotify";
+import type { MainView } from "./AppShell";
 import styles from "./Sidebar.module.css";
 
 const categories = [
@@ -19,11 +20,15 @@ export function Sidebar({
   open,
   onClose,
   activeCategory,
+  activeView,
+  onViewChange,
   onCategoryChange,
 }: {
   open: boolean;
   onClose: () => void;
   activeCategory: LibraryCategory;
+  activeView: MainView;
+  onViewChange: (view: MainView) => void;
   onCategoryChange: (category: LibraryCategory) => void;
 }) {
   const { loadDetails, search, playItem, playback, profile, logout, demo, playerReady } = useSpotifyAuth();
@@ -77,9 +82,20 @@ export function Sidebar({
 
       <nav aria-label="Navegação principal">
         <p className="nav-label">NAVEGAÇÃO</p>
-        <button className="nav-item active" aria-current="page"><Icon name="home" /> Início</button>
-        <button className="nav-item" title="Área em desenvolvimento"><Icon name="compass" /> Explorar</button>
-        <button className="nav-item" title="Área em desenvolvimento"><Icon name="radio" /> Rádio</button>
+        <button
+          className={`nav-item ${activeView === "explore" ? "active" : ""}`}
+          aria-current={activeView === "explore" ? "page" : undefined}
+          onClick={() => onViewChange("explore")}
+        >
+          <Icon name="compass" /> Explorar
+        </button>
+        <button
+          className={`nav-item ${activeView === "radio" ? "active" : ""}`}
+          aria-current={activeView === "radio" ? "page" : undefined}
+          onClick={() => onViewChange("radio")}
+        >
+          <Icon name="radio" /> Rádio
+        </button>
       </nav>
 
       <Search value={query} onChange={value => { setQuery(value); if (value) setDetail(null); }} />
@@ -91,14 +107,14 @@ export function Sidebar({
             {categories.map(category => (
               <button
                 key={category.id}
-                className={activeCategory === category.id ? "active" : ""}
+                className={activeView === "library" && activeCategory === category.id ? "active" : ""}
                 onClick={() => {
                   onCategoryChange(category.id);
                   setDetail(null);
                 }}
                 title={category.label}
                 aria-label={category.label}
-                aria-pressed={activeCategory === category.id}
+                aria-pressed={activeView === "library" && activeCategory === category.id}
               >
                 <Icon name={category.icon} />
                 <span>{category.label}</span>

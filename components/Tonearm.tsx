@@ -16,18 +16,12 @@ export function Tonearm({ position, duration, hasTrack, playing }: TonearmProps)
 
   return (
     <div className={`${styles.assembly} ${stateClass}`} aria-hidden="true">
-      <div className={styles.base} />
-      <div className={styles.arm} style={{ transform: `rotate(${angle}deg)` }}>
-        <div className={styles.counterweight} />
-        <div className={styles.pivotCollar} />
-        <div className={styles.tube} />
-        <div className={styles.headshell}>
-          <div className={styles.cartridge}>
-            <i className={styles.stylus} />
-          </div>
-        </div>
-      </div>
-      <div className={styles.rest} />
+      <img
+        className={styles.armImage}
+        src="/tonearm-mechanical.png"
+        alt=""
+        style={{ transform: `rotate(${angle}deg)` }}
+      />
     </div>
   );
 }
