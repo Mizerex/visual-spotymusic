@@ -19,8 +19,9 @@ const distRoot = resolve(projectRoot, "dist");
 rmSync(distRoot, { force: true, recursive: true });
 mkdirSync(resolve(distRoot, "server"), { recursive: true });
 mkdirSync(resolve(distRoot, ".openai"), { recursive: true });
+mkdirSync(resolve(distRoot, "client"), { recursive: true });
 
-cpSync(resolve(projectRoot, "out"), distRoot, { recursive: true });
+cpSync(resolve(projectRoot, "out"), resolve(distRoot, "client"), { recursive: true });
 cpSync(resolve(projectRoot, "worker", "index.js"), resolve(distRoot, "server", "index.js"));
 cpSync(
   resolve(projectRoot, ".openai", "hosting.json"),
