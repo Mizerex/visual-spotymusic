@@ -1,7 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Caslon+Display&display=swap');
 
 :root { --ink:#090807; --panel:#14110e; --panel2:#1d1813; --cream:#e7dcc4; --muted:#948875; --bronze:#ad7442; --amber:#df9b51; --red:#a63f2e; --line:rgba(231,220,196,.12); }
-* { box-sizing:border-box; }
+* {
+  box-sizing:border-box;
+  scrollbar-width:thin;
+  scrollbar-color:#7d4c29 #0a0807;
+}
+*::-webkit-scrollbar { width:9px;height:9px; }
+*::-webkit-scrollbar-track { background:#0a0807;box-shadow:inset 0 0 0 1px #21170f; }
+*::-webkit-scrollbar-thumb { min-height:34px;border:2px solid #0a0807;border-radius:8px;background:linear-gradient(180deg,#9b6337,#59361f);box-shadow:inset 0 1px rgba(255,210,159,.25); }
+*::-webkit-scrollbar-thumb:hover { background:linear-gradient(180deg,#bd7b43,#714426); }
+*::-webkit-scrollbar-button { width:0;height:0;display:none; }
+*::-webkit-scrollbar-corner { background:#0a0807; }
 html, body { margin:0; min-height:100%; background:var(--ink); color:var(--cream); font-family:"DM Sans",sans-serif; }
 body { overflow-x:hidden; }
 button, input { font:inherit; }
