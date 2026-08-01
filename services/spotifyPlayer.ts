@@ -8,6 +8,7 @@ export function loadSpotifySdk() {
 
   sdkPromise = new Promise<void>((resolve, reject) => {
     let settled = false;
+    let timeoutId = 0;
     const previousReady = window.onSpotifyWebPlaybackSDKReady;
     const source = "https://sdk.scdn.co/spotify-player.js";
     let script = document.querySelector(`script[src="${source}"]`) as HTMLScriptElement | null;
@@ -47,7 +48,7 @@ export function loadSpotifySdk() {
     script.addEventListener("error", onError, { once: true });
     script.addEventListener("load", onLoad, { once: true });
 
-    const timeoutId = window.setTimeout(() => {
+    timeoutId = window.setTimeout(() => {
       if (window.Spotify) finish();
       else finish(new Error("O player do Spotify demorou demais para iniciar. Recarregue a página e tente novamente."));
     }, 15000);
