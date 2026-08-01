@@ -5,20 +5,30 @@ import { AdSlot } from "@/components/AdSlot";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 import styles from "./LoginScreen.module.css";
 
+function SpotifyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.58 14.42a.75.75 0 0 1-1.03.25c-2.82-1.72-6.37-2.11-10.55-1.16a.75.75 0 1 1-.33-1.46c4.58-1.04 8.51-.59 11.66 1.33.35.21.46.67.25 1.04Zm1.47-3.27a.94.94 0 0 1-1.29.31c-3.23-1.98-8.15-2.55-11.96-1.39a.94.94 0 1 1-.55-1.8c4.36-1.33 9.78-.69 13.49 1.58.44.27.58.85.31 1.3Zm.13-3.4C14.31 7.45 7.91 7.24 4.22 8.35a1.13 1.13 0 1 1-.65-2.16c4.24-1.28 11.32-1.03 15.76 1.61a1.13 1.13 0 0 1-1.15 1.95Z" />
+    </svg>
+  );
+}
+
 export function LoginScreen() {
   const { login, enterDemo } = useSpotifyAuth();
   const [message, setMessage] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [connecting, setConnecting] = useState(false);
 
   const connect = async () => {
+    if (connecting) return;
+
     setMessage("");
-    setIsConnecting(true);
+    setConnecting(true);
 
     try {
       await login();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Não foi possível conectar ao Spotify.");
-      setIsConnecting(false);
+      setConnecting(false);
     }
   };
 
@@ -27,42 +37,58 @@ export function LoginScreen() {
       <div className={styles.glow} aria-hidden="true" />
 
       <div className={styles.layout}>
-        <section className={styles.card} aria-labelledby="login-title">
-          <div className={styles.brandArea}>
-            <div className="mini-deck" aria-hidden="true">
-              <div className="mini-record"><i /></div>
-              <div className="mini-arm" />
-            </div>
-            <p className="eyebrow">APRESENTAMOS</p>
-            <h1 id="login-title"><span>Visual</span> SpotyMusic</h1>
+        <section className={styles.card} aria-labelledby="login-heading">
+          <img
+            className={styles.logo}
+            src="/visual-spotymusic-icon.png"
+            alt="Visual SpotyMusic"
+            width="320"
+            height="320"
+          />
+
+          <div className={styles.intro}>
+            <p className={styles.eyebrow}>EXPERIÊNCIA MUSICAL HI-FI</p>
+            <h1 id="login-heading" className={styles.heading}>Seu Spotify em uma experiência visual e analógica.</h1>
+            <p className={styles.copy}>
+              Entre na sua biblioteca, escolha uma faixa e veja a música ganhar cor,
+              movimento e textura em um toca-discos inspirado nos grandes sistemas hi-fi dos anos 70.
+            </p>
           </div>
 
-          <p className={styles.tagline}>Seu Spotify em uma experiência visual e analógica.</p>
-          <p className={styles.copy}>
-            Entre na sua biblioteca, escolha uma faixa e veja a música ganhar cor, movimento e textura em um toca-discos inspirado nos grandes sistemas hi-fi dos anos 70.
-          </p>
+          <div className={styles.actions}>
+            <button
+              className={styles.primary}
+              type="button"
+              onClick={connect}
+              disabled={connecting}
+              aria-busy={connecting}
+            >
+              {connecting ? <span className={styles.spinner} aria-hidden="true" /> : <SpotifyIcon />}
+              {connecting ? "Conectando ao Spotify..." : "Conectar ao Spotify"}
+            </button>
 
-          <ul className={styles.features} aria-label="Principais recursos">
-            <li><b aria-hidden="true">◉</b><span>Biblioteca e playlists</span></li>
-            <li><b aria-hidden="true">◫</b><span>Capas no centro do vinil</span></li>
-            <li><b aria-hidden="true">⌁</b><span>Controles com estética Hi-Fi</span></li>
+            <button
+              className={styles.secondary}
+              type="button"
+              onClick={enterDemo}
+              disabled={connecting}
+            >
+              Explorar em modo demonstração
+            </button>
+          </div>
+
+          <ul className={styles.benefits} aria-label="Informações de segurança">
+            <li><span className={styles.check} aria-hidden="true">✓</span>Conexão segura</li>
+            <li><span className={styles.check} aria-hidden="true">✓</span>Seus dados permanecem no Spotify</li>
+            <li><span className={styles.check} aria-hidden="true">✓</span>Nenhuma senha armazenada</li>
           </ul>
-
-          <button className={styles.primary} onClick={connect} disabled={isConnecting}>
-            <svg className={styles.spotifyIcon} viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="11" fill="currentColor" />
-              <path d="M6.7 9.1c3.6-1.1 7.8-.8 10.9.8M7.4 12.2c3-.8 6.6-.6 9.3.7M8.1 15.1c2.5-.6 5.3-.4 7.5.6" fill="none" stroke="#140f0b" strokeWidth="1.55" strokeLinecap="round" />
-            </svg>
-            {isConnecting ? "Conectando ao Spotify…" : "Conectar ao Spotify"}
-          </button>
-
-          <button className={styles.secondary} onClick={enterDemo}>Explorar em modo demonstração</button>
 
           {message && <p className={styles.error} role="alert">{message}</p>}
 
-          <div className={styles.privacy}>
-            <span>Conexão segura via Spotify · Nenhuma senha é armazenada</span>
-            <a href="/privacy">Privacidade</a>
+          <div className={styles.footer}>
+            <span>Autenticação oficial do Spotify</span>
+            <span aria-hidden="true">·</span>
+            <a className={styles.privacy} href="/privacy">Privacidade</a>
           </div>
         </section>
 

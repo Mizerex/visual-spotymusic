@@ -10,5 +10,18 @@ export function SpotifyCallback() {
     if (!code || !state) { setMessage("A resposta do Spotify está incompleta."); return; }
     exchangeCallback(code, state).then(() => window.location.replace("/")).catch(error => setMessage(error.message));
   }, []);
-  return <main className="callback-screen"><div className="loading-record" /><h1>Visual SpotyMusic</h1><p>{message}</p><a href="/">Voltar ao início</a></main>;
+  return (
+    <main className="callback-screen">
+      <div className="loading-record" />
+      <img
+        className="callback-logo"
+        src="/visual-spotymusic-platter-logo.png"
+        alt="Visual SpotyMusic"
+        width="1536"
+        height="1024"
+      />
+      <p>{message}</p>
+      <a href="/">Voltar ao início</a>
+    </main>
+  );
 }

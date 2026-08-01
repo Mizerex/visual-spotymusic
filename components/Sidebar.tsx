@@ -1,47 +1,166 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { Icon } from "./Icon";
 import { Search } from "./Search";
 import { LibraryList } from "./LibraryList";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
-import type { LibraryItem } from "@/types/spotify";
+import type { LibraryCategory, LibraryItem } from "@/types/spotify";
+import type { MainView } from "./AppShell";
+import styles from "./Sidebar.module.css";
 
 const categories = [
-  { id: "playlists", label: "Playlists", icon: "playlist" }, { id: "albums", label: "Álbuns", icon: "album" },
-  { id: "artists", label: "Artistas", icon: "artist" }, { id: "tracks", label: "Músicas", icon: "music" },
+  { id: "playlists", label: "Playlists", icon: "playlist" },
+  { id: "albums", label: "Álbuns", icon: "album" },
+  { id: "artists", label: "Artistas", icon: "artist" },
+  { id: "tracks", label: "Músicas", icon: "music" },
 ] as const;
 
-export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { library, loadLibrary, loadDetails, search, playItem, playback, profile, logout, demo, playerReady } = useSpotifyAuth();
-  const [active, setActive] = useState<(typeof categories)[number]["id"]>("playlists");
+export function Sidebar({
+  open,
+  onClose,
+  activeCategory,
+  activeView,
+  onViewChange,
+  onCategoryChange,
+}: {
+  open: boolean;
+  onClose: () => void;
+  activeCategory: LibraryCategory;
+  activeView: MainView;
+  onViewChange: (view: MainView) => void;
+  onCategoryChange: (category: LibraryCategory) => void;
+}) {
+  const { loadDetails, search, playItem, playback, profile, logout, demo, playerReady } = useSpotifyAuth();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Record<string, LibraryItem[]> | null>(null);
   const [detail, setDetail] = useState<{ item: LibraryItem; tracks: LibraryItem[] } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  useEffect(() => { loadLibrary(active); }, [active, loadLibrary]);
-  useEffect(() => { const timer = setTimeout(() => { if (query.trim()) search(query).then(setResults).catch(() => setResults(null)); else setResults(null); }, 350); return () => clearTimeout(timer); }, [query, search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (query.trim()) search(query).then(setResults).catch(() => setResults(null));
+      else setResults(null);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [query, search]);
+
   const searchItems = results ? Object.values(results).flat() : null;
+
   const openItem = async (item: LibraryItem) => {
-    if (item.kind === "track") { await playItem(item); return; }
+    if (item.kind === "track") {
+      await playItem(item);
+      return;
+    }
+
     setDetailLoading(true);
-    try { setDetail({ item, tracks: await loadDetails(item) }); } finally { setDetailLoading(false); }
+    try {
+      setDetail({ item, tracks: await loadDetails(item) });
+    } finally {
+      setDetailLoading(false);
+    }
   };
-  return <aside className={`sidebar ${open ? "open" : ""}`}>
-    <header className="brand"><div className="brand-mark"><i /></div><div><strong>VISUAL</strong><span>SPOTYMUSIC</span></div><button className="close-sidebar" onClick={onClose} aria-label="Fechar biblioteca"><Icon name="close" /></button></header>
-    <nav aria-label="Navegação principal">
-      <p className="nav-label">NAVEGAÇÃO</p>
-      <button className="nav-item active"><Icon name="home" /> Início</button>
-      <button className="nav-item"><Icon name="compass" /> Explorar</button>
-      <button className="nav-item"><Icon name="radio" /> Rádio</button>
-    </nav>
-    <Search value={query} onChange={value => { setQuery(value); if (value) setDetail(null); }} />
-    {!query && <><p className="nav-label library-label">SUA BIBLIOTECA</p><div className="category-tabs">{categories.map(category => <button key={category.id} className={active === category.id ? "active" : ""} onClick={() => setActive(category.id)} title={category.label}><Icon name={category.icon} /><span>{category.label}</span></button>)}</div></>}
-    <div className="sidebar-content">{detail ? <div className="library-detail">
-      <button className="detail-back" onClick={() => setDetail(null)}>← Voltar</button>
-      <div className="detail-hero">{detail.item.image ? <img src={detail.item.image} alt="" /> : <span>♫</span>}<div><small>{detail.item.kind.toUpperCase()}</small><strong>{detail.item.name}</strong><p>{detail.item.subtitle}</p></div></div>
-      <button className="detail-play" onClick={() => playItem(detail.item)}>▶ Reproduzir</button>
-      {detailLoading ? <p className="detail-loading">Carregando faixas…</p> : <LibraryList items={detail.tracks} selected={playback.track?.id} onPlay={playItem} emptyText="O Spotify não liberou a lista, mas Reproduzir ainda pode tocar a coleção." />}
-    </div> : <LibraryList items={searchItems || library[active]} selected={playback.track?.id} onPlay={item => { void openItem(item); }} emptyText={query ? "Nenhum resultado para esta busca." : "Sua biblioteca aparecerá aqui."} />}</div>
-    <footer className="profile"><span className="avatar">{profile?.display_name?.slice(0, 1).toUpperCase() || "V"}</span><span><strong>{profile?.display_name || "Visual Listener"}</strong><small>{demo ? "Modo demonstração" : playerReady ? "Toca-discos online" : "Conectando ao Spotify"}</small></span><button onClick={logout} aria-label="Desconectar do Spotify"><Icon name="logout" /></button></footer>
-  </aside>;
+
+  return (
+    <aside className={`sidebar ${styles.shell} ${open ? "open" : ""}`} aria-label="Biblioteca do Spotify">
+      <header className={`profile ${styles.profile} ${styles.profileTop}`}>
+        <span className="avatar">{profile?.display_name?.slice(0, 1).toUpperCase() || "V"}</span>
+        <span>
+          <strong>{profile?.display_name || "Visual Listener"}</strong>
+          <small>{demo ? "Modo demonstração" : playerReady ? "Toca-discos online" : "Conectando ao Spotify"}</small>
+        </span>
+        <div className={styles.profileActions}>
+          <button onClick={logout} aria-label="Desconectar do Spotify" title="Sair">
+            <Icon name="logout" />
+          </button>
+          <button className="close-sidebar" onClick={onClose} aria-label="Fechar biblioteca">
+            <Icon name="close" />
+          </button>
+        </div>
+      </header>
+
+      <nav aria-label="Navegação principal">
+        <p className="nav-label">NAVEGAÇÃO</p>
+        <button
+          className={`nav-item ${activeView === "explore" ? "active" : ""}`}
+          aria-current={activeView === "explore" ? "page" : undefined}
+          onClick={() => onViewChange("explore")}
+        >
+          <Icon name="compass" /> Explorar
+        </button>
+        <button
+          className={`nav-item ${activeView === "radio" ? "active" : ""}`}
+          aria-current={activeView === "radio" ? "page" : undefined}
+          onClick={() => onViewChange("radio")}
+        >
+          <Icon name="radio" /> Rádio
+        </button>
+      </nav>
+
+      <Search value={query} onChange={value => { setQuery(value); if (value) setDetail(null); }} />
+
+      {!query && (
+        <>
+          <p className="nav-label library-label">SUA BIBLIOTECA</p>
+          <div className="category-tabs">
+            {categories.map(category => (
+              <button
+                key={category.id}
+                className={activeView === "library" && activeCategory === category.id ? "active" : ""}
+                onClick={() => {
+                  onCategoryChange(category.id);
+                  setDetail(null);
+                }}
+                title={category.label}
+                aria-label={category.label}
+                aria-pressed={activeView === "library" && activeCategory === category.id}
+              >
+                <Icon name={category.icon} />
+                <span>{category.label}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {(query || detail) && <div className="sidebar-content">
+        {detail ? (
+          <div className="library-detail">
+            <button className="detail-back" onClick={() => setDetail(null)}>← Voltar</button>
+            <div className="detail-hero">
+              {detail.item.image ? <img src={detail.item.image} alt="" /> : <span>♫</span>}
+              <div>
+                <small>{detail.item.kind.toUpperCase()}</small>
+                <strong>{detail.item.name}</strong>
+                <p>{detail.item.subtitle}</p>
+              </div>
+            </div>
+            <button className="detail-play" onClick={() => playItem(detail.item)}>▶ Reproduzir</button>
+            {detailLoading ? (
+              <p className="detail-loading">Carregando faixas…</p>
+            ) : (
+              <LibraryList
+                items={detail.tracks}
+                selected={playback.track?.id}
+                onPlay={playItem}
+                emptyText="O Spotify não liberou a lista, mas Reproduzir ainda pode tocar a coleção."
+              />
+            )}
+          </div>
+        ) : (
+          <LibraryList
+            items={searchItems || []}
+            selected={playback.track?.id}
+            onPlay={item => { void openItem(item); }}
+            emptyText="Nenhum resultado para esta busca."
+          />
+        )}
+      </div>}
+
+      <footer className={`brand ${styles.brand} ${styles.brandFooter}`}>
+        <img className={styles.logo} src="/visual-spotymusic-icon.png" alt="Visual SpotyMusic" />
+      </footer>
+    </aside>
+  );
 }
