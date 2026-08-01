@@ -1,7 +1,7 @@
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 export const DEFAULT_RESTORE_LEVEL = 35;
-export const MIN_AUDIBLE_VOLUME = 0.0001;
+export const MIN_AUDIBLE_VOLUME = 0.000001;
 
 export function clampVolume(value: number) {
   return clamp(Number.isFinite(value) ? value : 0, 0, 1);
