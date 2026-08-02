@@ -1,0 +1,86 @@
+/* Camadas da nova fita Rich Cassette na interface mobile. */
+
+img[src="/mobile-cassette-left-reel.png"],
+img[src="/mobile-cassette-right-reel.png"] {
+  z-index: 2 !important;
+  top: 25.2% !important;
+  width: 13.2% !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .72)) drop-shadow(0 0 2px rgba(255, 226, 181, .3)) !important;
+}
+
+img[src="/mobile-cassette-left-reel.png"] {
+  left: 29.8% !important;
+}
+
+img[src="/mobile-cassette-right-reel.png"] {
+  left: 68.9% !important;
+}
+
+img[src="/mobile-cassette-body.png"] {
+  position: absolute;
+  z-index: 4;
+  left: 5.5%;
+  top: 11.4%;
+  display: block;
+  width: 89%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .48));
+}
+
+/* O div imediatamente após a fita contém os quatro eixos metálicos inferiores. */
+img[src="/mobile-cassette-body.png"] + div {
+  position: absolute;
+  z-index: 3;
+  left: 24.6%;
+  top: 38.25%;
+  width: 50.9%;
+  height: 5.2%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 3.35fr 1fr 1fr;
+  align-items: center;
+  pointer-events: none;
+}
+
+img[src="/mobile-cassette-body.png"] + div i {
+  width: 42%;
+  aspect-ratio: 1;
+  justify-self: center;
+  border: 1px solid rgba(19, 12, 7, .92);
+  border-radius: 50%;
+  box-sizing: border-box;
+  background:
+    conic-gradient(from 15deg, #35271b, #e7d7bd 12%, #66503b 24%, #f6ead7 38%, #403024 52%, #c6ad89 66%, #2a1d14 81%, #ddd0bb 94%, #35271b),
+    radial-gradient(circle, #17100b 0 25%, transparent 27%);
+  box-shadow:
+    inset 0 0 0 2px rgba(245, 229, 204, .18),
+    inset 0 0 4px rgba(0, 0, 0, .92),
+    0 1px 2px rgba(0, 0, 0, .75),
+    0 0 2px rgba(255, 226, 184, .35);
+  transform-origin: 50% 50%;
+}
+
+img[src="/mobile-cassette-body.png"] + div i:nth-child(1) { grid-column: 1; }
+img[src="/mobile-cassette-body.png"] + div i:nth-child(2) { grid-column: 2; }
+img[src="/mobile-cassette-body.png"] + div i:nth-child(3) { grid-column: 4; }
+img[src="/mobile-cassette-body.png"] + div i:nth-child(4) { grid-column: 5; }
+
+section[class*="playing"] img[src="/mobile-cassette-body.png"] + div i {
+  animation: mobileCassettePinSpin .78s linear infinite;
+}
+
+section[class*="playing"] img[src="/mobile-cassette-body.png"] + div i:nth-child(even) {
+  animation-direction: reverse;
+}
+
+@keyframes mobileCassettePinSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  section[class*="playing"] img[src="/mobile-cassette-body.png"] + div i {
+    animation: none;
+  }
+}
