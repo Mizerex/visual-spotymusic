@@ -312,6 +312,55 @@
   pointer-events: none;
 }
 
+.transportVisuals {
+  position: absolute;
+  z-index: 7;
+  left: 6.8%;
+  top: 56.3%;
+  width: 88.5%;
+  aspect-ratio: 1385 / 326;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.transportBase,
+.transportLight img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  height: auto;
+  user-select: none;
+}
+
+.transportBase {
+  left: -4.98%;
+  top: -92.94%;
+  width: 110.9%;
+}
+
+.transportLight {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 110ms ease-out;
+}
+
+.transportLight img {
+  left: -4.29%;
+  top: -93.81%;
+  width: 108.51%;
+}
+
+.transportLightOn { opacity: 1; }
+
+.previousLight { clip-path: inset(11% 78.9% 10% 1.1% round 7%); }
+.pauseLight { clip-path: inset(11% 59.5% 10% 20.5% round 7%); }
+.playLight { clip-path: inset(9% 39.2% 8% 39.7% round 7%); }
+.stopLight { clip-path: inset(11% 20% 10% 59.1% round 7%); }
+.nextLight { clip-path: inset(11% .7% 10% 78.5% round 7%); }
+
 .transportHotspots {
   position: absolute;
   z-index: 8;
@@ -337,42 +386,6 @@
 .transportHotspots button:not(:disabled):active {
   background: rgba(255, 157, 22, .13);
 }
-
-.playLight {
-  position: absolute;
-  z-index: 1;
-  left: 40.68%;
-  top: 0;
-  width: 18.64%;
-  height: 100%;
-  overflow: hidden;
-  border-radius: 5px;
-  pointer-events: none;
-}
-
-.playLight::before,
-.playLight::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  transition: opacity .28s ease, box-shadow .28s ease;
-}
-
-.playLight::before {
-  background: rgba(12, 7, 4, .67);
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, .86);
-  opacity: 1;
-}
-
-.playLight::after {
-  background: radial-gradient(circle at 50% 48%, rgba(255, 189, 66, .22), transparent 68%);
-  box-shadow: 0 0 9px rgba(255, 145, 18, .38), inset 0 0 5px rgba(255, 216, 117, .18);
-  opacity: 0;
-}
-
-.playLightOn::before { opacity: 0; }
-.playLightOn::after { opacity: 1; }
 
 .digitalEqualizer {
   position: absolute;
@@ -826,10 +839,7 @@
     transition-duration: .35s;
   }
 
-  .playLight::before,
-  .playLight::after {
-    transition-duration: .16s;
-  }
+  .transportLight { transition-duration: 70ms; }
 
   .loadingRecord { animation: none; }
 }

@@ -3,7 +3,7 @@
   "version": "2.3.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev-sites.mjs",
     "build": "node scripts/build-sites.mjs",
     "start": "serve out -l 3000",
     "lint": "next lint",

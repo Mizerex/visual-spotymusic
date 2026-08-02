@@ -8,6 +8,7 @@ import styles from "./mobile-concept.module.css";
 
 const RETURN_PATH_KEY = "visual_spotymusic_post_auth_path";
 type Drawer = LibraryCategory | "radio" | "more" | "equalizer" | null;
+type TransportFlash = "previous" | "next" | null;
 
 function rememberMobileReturnPath() {
   for (const storageName of ["sessionStorage", "localStorage"] as const) {
@@ -65,11 +66,13 @@ export function MobileCassettePlayer() {
   const [radioQuery, setRadioQuery] = useState("");
   const [radioResults, setRadioResults] = useState<LibraryItem[]>([]);
   const [radioSearching, setRadioSearching] = useState(false);
+  const [transportFlash, setTransportFlash] = useState<TransportFlash>(null);
   const leftReelRef = useRef<HTMLElement | null>(null);
   const rightReelRef = useRef<HTMLElement | null>(null);
   const equalizerBarsRef = useRef<Array<HTMLSpanElement | null>>([]);
   const reelAnglesRef = useRef<[number, number]>([0, 0]);
   const reelBoostRef = useRef({ until: 0, direction: 1 });
+  const transportFlashTimerRef = useRef<number | null>(null);
   const visualStateRef = useRef({ position: 0, duration: 0, volume: 0 });
 
   const track = playback.track;
@@ -169,9 +172,23 @@ export function MobileCassettePlayer() {
   }, [playback.isPlaying, track?.id]);
 
   useEffect(() => () => {
+    if (transportFlashTimerRef.current !== null) {
+      window.clearTimeout(transportFlashTimerRef.current);
+    }
     for (const reel of [leftReelRef.current, rightReelRef.current]) {
       reel?.getAnimations().forEach(animation => animation.cancel());
     }
+  }, []);
+
+  const flashTransportButton = useCallback((control: Exclude<TransportFlash, null>) => {
+    if (transportFlashTimerRef.current !== null) {
+      window.clearTimeout(transportFlashTimerRef.current);
+    }
+    setTransportFlash(control);
+    transportFlashTimerRef.current = window.setTimeout(() => {
+      setTransportFlash(null);
+      transportFlashTimerRef.current = null;
+    }, 260);
   }, []);
 
   const triggerReelBurst = useCallback((direction: -1 | 1) => {
@@ -191,6 +208,20 @@ export function MobileCassettePlayer() {
       }).catch(() => undefined);
     });
   }, [playback.isPlaying]);
+
+  const handlePrevious = () => {
+    if (!track) return;
+    flashTransportButton("previous");
+    triggerReelBurst(-1);
+    void previous();
+  };
+
+  const handleNext = () => {
+    if (!track) return;
+    flashTransportButton("next");
+    triggerReelBurst(1);
+    void next();
+  };
 
   const connect = async () => {
     if (connecting) return;
@@ -349,13 +380,31 @@ export function MobileCassettePlayer() {
           </>
         )}
 
+        <div className={styles.transportVisuals} aria-hidden="true">
+          <img className={styles.transportBase} src="/mobile-controls-off.png" alt="" width="1536" height="1024" decoding="sync" />
+          <i className={`${styles.transportLight} ${styles.previousLight} ${transportFlash === "previous" ? styles.transportLightOn : ""}`}>
+            <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
+          </i>
+          <i className={`${styles.transportLight} ${styles.pauseLight} ${track && !playback.isPlaying && !playback.stopped ? styles.transportLightOn : ""}`}>
+            <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
+          </i>
+          <i className={`${styles.transportLight} ${styles.playLight} ${playback.isPlaying ? styles.transportLightOn : ""}`}>
+            <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
+          </i>
+          <i className={`${styles.transportLight} ${styles.stopLight} ${track && playback.stopped ? styles.transportLightOn : ""}`}>
+            <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
+          </i>
+          <i className={`${styles.transportLight} ${styles.nextLight} ${transportFlash === "next" ? styles.transportLightOn : ""}`}>
+            <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
+          </i>
+        </div>
+
         <div className={styles.transportHotspots} aria-label="Controles de reprodução">
-          <button type="button" onClick={() => { triggerReelBurst(-1); void previous(); }} disabled={!track} aria-label="Faixa anterior" />
+          <button type="button" onClick={handlePrevious} disabled={!track} aria-label="Faixa anterior" />
           <button type="button" onClick={() => { if (playback.isPlaying) void toggle(); }} disabled={!track || !playback.isPlaying} aria-label="Pausar" />
           <button type="button" onClick={() => { if (!playback.isPlaying) void toggle(); }} disabled={!track || playback.isPlaying} aria-label="Reproduzir" />
           <button type="button" onClick={() => void stop()} disabled={!track || playback.stopped} aria-label="Parar" />
-          <button type="button" onClick={() => { triggerReelBurst(1); void next(); }} disabled={!track} aria-label="Próxima faixa" />
-          <i className={`${styles.playLight} ${playback.isPlaying ? styles.playLightOn : ""}`} aria-hidden="true" />
+          <button type="button" onClick={handleNext} disabled={!track} aria-label="Próxima faixa" />
         </div>
 
         <div className={styles.digitalEqualizer} aria-hidden="true">
