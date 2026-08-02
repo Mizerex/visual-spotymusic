@@ -397,6 +397,7 @@ export function MobileCassettePlayer() {
             />
             <span className={styles.currentTime}>{formatTime(playback.position)}</span>
             <span className={styles.durationTime}>{formatTime(playback.duration)}</span>
+            <i className={styles.progressTrack} aria-hidden="true" />
             <i className={styles.progressFill} style={{ width: `${progressPercent * 0.73}%` }} aria-hidden="true" />
           </>
         )}

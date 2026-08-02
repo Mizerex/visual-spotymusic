@@ -321,6 +321,19 @@
 .currentTime { left: 10.3%; }
 .durationTime { right: 8.8%; }
 
+.progressTrack {
+  position: absolute;
+  z-index: 5;
+  left: 18.1%;
+  top: 55.22%;
+  width: 73.7%;
+  height: 1.05%;
+  border-radius: 999px;
+  background: #090604;
+  box-shadow: inset 0 0 2px #000;
+  pointer-events: none;
+}
+
 .progressFill {
   position: absolute;
   z-index: 6;
