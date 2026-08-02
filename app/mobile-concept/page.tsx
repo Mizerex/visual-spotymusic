@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cassetteImageSrc } from "./cassetteImage";
 import styles from "./mobile-concept.module.css";
 
 export const metadata: Metadata = {
@@ -27,18 +28,15 @@ export default function MobileConceptPage() {
           <button type="button" aria-label="Abrir equalizador">≋</button>
         </header>
 
-        <section className={styles.cassetteDeck} aria-label="Toca-fitas">
-          <div className={styles.cassetteLabel}>
-            <strong>Side A</strong>
-            <span>Visual Sessions</span>
-            <small>C-90</small>
-          </div>
-          <div className={styles.tapeWindow}>
-            <span className={styles.reel}><i /></span>
-            <b className={styles.tape} />
-            <span className={styles.reel}><i /></span>
-          </div>
-          <div className={styles.highFidelity}>High fidelity</div>
+        <section className={styles.cassetteDeck} aria-label="Fita cassete oficial do modo mobile">
+          <img
+            src={cassetteImageSrc}
+            alt="Fita cassete preta com faixas retrô em creme, laranja, vermelho e amarelo"
+            width="400"
+            height="400"
+            decoding="async"
+            style={{ display: "block", width: "100%", height: "auto" }}
+          />
         </section>
 
         <section className={styles.nowPlaying}>
