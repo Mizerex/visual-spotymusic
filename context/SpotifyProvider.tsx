@@ -9,16 +9,16 @@ import type { LibraryItem, PlaybackSnapshot, SpotifyPlayer, SpotifyTrack } from 
 
 type Profile = { display_name?: string; product?: string; images?: { url: string }[] };
 type Category = "playlists" | "albums" | "artists" | "tracks";
-type PlayContext = { uri: string; tracks: LibraryItem[]; index: number };
+type PlayContext = { uri: string; tracks: LibraryItem[]; index: number; mode?: "context" | "local"; label?: string };
 
 type SpotifyContextValue = {
   authenticated: boolean; demo: boolean; ready: boolean; playerReady: boolean; profile: Profile | null;
   demoFinished: boolean;
   tone: { balance: number; bass: number; treble: number };
-  playback: PlaybackSnapshot; deviceId: string; library: Record<Category, LibraryItem[]>;
+  playback: PlaybackSnapshot; playbackSource: string; deviceId: string; library: Record<Category, LibraryItem[]>;
   login: () => Promise<void>; enterDemo: () => void; restartDemo: () => Promise<void>; logout: () => void;
   loadLibrary: (category: Category) => Promise<void>; loadDetails: (item: LibraryItem) => Promise<LibraryItem[]>; search: (query: string) => Promise<Record<Category, LibraryItem[]>>;
-  playItem: (item: LibraryItem, context?: PlayContext) => Promise<void>; toggle: () => Promise<void>; stop: () => Promise<void>; previous: () => Promise<void>; next: () => Promise<void>;
+  playItem: (item: LibraryItem, context?: PlayContext) => Promise<void>; playArtistMix: (artist: LibraryItem) => Promise<boolean>; toggle: () => Promise<void>; stop: () => Promise<void>; previous: () => Promise<void>; next: () => Promise<void>;
   activateDevice: () => Promise<void>;
   seek: (ms: number) => Promise<void>; setVolume: (value: number) => Promise<void>;
   setBalance: (value: number) => void; setBass: (value: number) => void; setTreble: (value: number) => void;
@@ -75,6 +75,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
   const [demoFinished, setDemoFinished] = useState(false);
   const [tone, setTone] = useState({ balance: 0, bass: 0, treble: 0 });
   const [playback, setPlayback] = useState(initialPlayback);
+  const [playbackSource, setPlaybackSource] = useState("");
   const [deviceId, setDeviceId] = useState("");
   const [library, setLibrary] = useState<Record<Category, LibraryItem[]>>({ playlists: [], albums: [], artists: [], tracks: [] });
   const [liked, setLiked] = useState(false);
@@ -247,6 +248,30 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     } catch (reason) { fail(reason); }
   }, [demo, fail]);
 
+  const findArtistTracks = useCallback(async (artist: LibraryItem) => {
+    if (demo) return demoTracks.map(mapTrack);
+    const escapedName = artist.name.replace(/"/g, "\\\"");
+    const found: SpotifyTrack[] = [];
+    for (let offset = 0; offset < 50; offset += 10) {
+      const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(`artist:"${escapedName}"`)}&type=track&limit=10&offset=${offset}`);
+      const page = data.tracks?.items || [];
+      found.push(...page);
+      if (page.length < 10) break;
+    }
+    const unique = new Map<string, SpotifyTrack>();
+    for (const track of found) {
+      if (!track?.id || !track.uri || track.is_playable === false || unique.has(track.id)) continue;
+      unique.set(track.id, track);
+    }
+    const available = [...unique.values()];
+    const exactIdMatches = available.filter(track => track.artists?.some(candidate => candidate.id === artist.id));
+    if (exactIdMatches.length) return exactIdMatches.map(mapTrack);
+    const normalizedName = artist.name.trim().toLocaleLowerCase();
+    return available
+      .filter(track => track.artists?.some(candidate => candidate.name?.trim().toLocaleLowerCase() === normalizedName))
+      .map(mapTrack);
+  }, [demo]);
+
   const loadDetails = useCallback(async (item: LibraryItem) => {
     if (item.kind === "track") return [item];
     if (demo) return demoTracks.map(mapTrack);
@@ -260,24 +285,31 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
         const tracks = await loadEveryOffsetPage(`/albums/${item.id}/tracks`, page => page.items, page => page.total);
         return tracks.map((track: any) => mapTrack({ ...track, album: { id: data.id || item.id, name: data.name || item.name, images: data.images || (item.image ? [{ url: item.image }] : []), total_tracks: data.total_tracks } }));
       }
-      const data = await spotifyApi<any>(`/artists/${item.id}/top-tracks?market=from_token`);
-      return (data.tracks || []).map(mapTrack);
+      const tracks = await findArtistTracks(item);
+      if (!tracks.length) fail(new Error(`Nenhuma faixa disponível foi encontrada para ${item.name}.`));
+      return tracks;
     } catch (reason) {
       fail(reason);
       return [];
     }
-  }, [demo, fail]);
+  }, [demo, fail, findArtistTracks]);
 
   const search = useCallback(async (query: string) => {
     if (!query.trim()) return { playlists: [], albums: [], artists: [], tracks: [] };
     if (demo) {
       const matches = demoTracks.filter(t => `${t.name} ${t.artists[0].name}`.toLowerCase().includes(query.toLowerCase())).map(mapTrack);
-      return { playlists: [], albums: [], artists: [], tracks: matches };
+      const artistMatches = demoArtist.name.toLowerCase().includes(query.toLowerCase()) ? [demoArtist] : [];
+      return { playlists: [], albums: [], artists: artistMatches, tracks: matches };
     }
-    const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(query)}&type=track,artist,album,playlist&limit=8`);
-    const basic = (value: any, kind: LibraryItem["kind"]): LibraryItem => ({ id: value.id, uri: value.uri, name: value.name, subtitle: kind === "artist" ? "Artista" : kind === "playlist" ? `${value.items?.total ?? value.tracks?.total ?? 0} faixas` : value.artists?.map((a: any) => a.name).join(", ") || "Spotify", image: value.images?.[0]?.url, kind });
-    return { tracks: data.tracks.items.map(mapTrack), artists: data.artists.items.map((x: any) => basic(x, "artist")), albums: data.albums.items.map((x: any) => basic(x, "album")), playlists: data.playlists.items.filter(Boolean).map((x: any) => basic(x, "playlist")) };
-  }, [demo]);
+    try {
+      const data = await spotifyApi<any>(`/search?q=${encodeURIComponent(query)}&type=track,artist,album,playlist&limit=8`);
+      const basic = (value: any, kind: LibraryItem["kind"]): LibraryItem => ({ id: value.id, uri: value.uri, name: value.name, subtitle: kind === "artist" ? "Artista" : kind === "playlist" ? `${value.items?.total ?? value.tracks?.total ?? 0} faixas` : value.artists?.map((a: any) => a.name).join(", ") || "Spotify", image: value.images?.[0]?.url, kind });
+      return { tracks: data.tracks.items.map(mapTrack), artists: data.artists.items.map((x: any) => basic(x, "artist")), albums: data.albums.items.map((x: any) => basic(x, "album")), playlists: data.playlists.items.filter(Boolean).map((x: any) => basic(x, "playlist")) };
+    } catch (reason) {
+      fail(reason);
+      return { playlists: [], albums: [], artists: [], tracks: [] };
+    }
+  }, [demo, fail]);
 
   const activateDevice = useCallback(async () => {
     try {
@@ -301,6 +333,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
         setDemoFinished(false);
         stoppedRef.current = false;
         setPlayback(previous => ({ ...previous, track, duration: track.duration_ms, position: 0, isPlaying: true, stopped: false, queueIndex: context?.index || 0, queueLength: context?.tracks.length || 1 }));
+        setPlaybackSource(context?.label || track.album.name);
         await demoAudioContextRef.current?.resume();
         await audio.play();
         return;
@@ -313,14 +346,71 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       await playerRef.current.activateElement();
       await spotifyApi("/me/player", { method: "PUT", body: JSON.stringify({ device_ids: [deviceId], play: false }) });
       await wait(300);
-      const body = context
+      const body = context?.mode === "local"
+        ? { uris: context.tracks.slice(context.index).map(trackItem => trackItem.uri), position_ms: 0 }
+        : context
         ? { context_uri: context.uri, offset: { uri: selectedItem.uri }, position_ms: 0 }
         : item.kind === "track" ? { uris: [item.uri] } : { context_uri: item.uri };
       await spotifyApi(`/me/player/play?device_id=${deviceId}`, { method: "PUT", body: JSON.stringify(body) });
       stoppedRef.current = false;
+      setPlaybackSource(context?.label || selectedTrack?.album.name || item.name);
       setPlayback(previous => ({ ...previous, isPlaying: true, stopped: false, position: 0 }));
     } catch (reason) { fail(reason); }
   }, [demo, deviceId, fail]);
+
+  const playArtistMix = useCallback(async (artist: LibraryItem) => {
+    const label = `Mix de ${artist.name}`;
+    if (demo) {
+      const tracks = await loadDetails(artist);
+      if (!tracks.length) return false;
+      const localQueue: PlayContext = { uri: `local:artist:${artist.id}`, tracks, index: 0, mode: "local", label };
+      await playItem(tracks[0], localQueue);
+      return true;
+    }
+    if (!playerRef.current || !deviceId) {
+      fail(new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos."));
+      return false;
+    }
+    try {
+      queueRef.current = null;
+      stoppedRef.current = true;
+      await playerRef.current.activateElement();
+      await spotifyApi("/me/player", { method: "PUT", body: JSON.stringify({ device_ids: [deviceId], play: false }) });
+      await wait(300);
+      await spotifyApi(`/me/player/play?device_id=${deviceId}`, {
+        method: "PUT",
+        body: JSON.stringify({ context_uri: `spotify:artist:${artist.id}` }),
+      });
+      stoppedRef.current = false;
+      setPlaybackSource(label);
+      setPlayback(previous => ({ ...previous, isPlaying: true, stopped: false, position: 0 }));
+      return true;
+    } catch {
+      const tracks = await loadDetails(artist);
+      if (!tracks.length) return false;
+      const localQueue: PlayContext = { uri: `local:artist:${artist.id}`, tracks, index: 0, mode: "local", label };
+      try {
+        queueRef.current = { ...localQueue };
+        stoppedRef.current = true;
+        const firstTrack = tracks[0].track;
+        if (firstTrack) setPlayback(previous => ({ ...previous, track: firstTrack, duration: firstTrack.duration_ms, position: 0, isPlaying: false, stopped: true, queueIndex: 0, queueLength: tracks.length }));
+        await playerRef.current.activateElement();
+        await spotifyApi("/me/player", { method: "PUT", body: JSON.stringify({ device_ids: [deviceId], play: false }) });
+        await wait(300);
+        await spotifyApi(`/me/player/play?device_id=${deviceId}`, {
+          method: "PUT",
+          body: JSON.stringify({ uris: tracks.map(trackItem => trackItem.uri), position_ms: 0 }),
+        });
+        stoppedRef.current = false;
+        setPlaybackSource(label);
+        setPlayback(previous => ({ ...previous, isPlaying: true, stopped: false, position: 0, queueIndex: 0, queueLength: tracks.length }));
+        return true;
+      } catch (reason) {
+        fail(reason);
+        return false;
+      }
+    }
+  }, [demo, deviceId, fail, loadDetails, playItem]);
 
   const toggle = useCallback(async () => {
     const wasPlaying = playback.isPlaying;
@@ -348,7 +438,9 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       }
       await playerRef.current?.activateElement();
       const body = shouldPlay && wasStopped && queue && selected
-        ? JSON.stringify({ context_uri: queue.uri, offset: { uri: selected.uri }, position_ms: 0 })
+        ? JSON.stringify(queue.mode === "local"
+          ? { uris: queue.tracks.slice(queue.index).map(item => item.uri), position_ms: 0 }
+          : { context_uri: queue.uri, offset: { uri: selected.uri }, position_ms: 0 })
         : undefined;
       await spotifyApi(`/me/player/${shouldPlay ? "play" : "pause"}?device_id=${encodeURIComponent(deviceId)}`, { method: "PUT", body });
     } catch (reason) {
@@ -404,8 +496,13 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       }
       if (!playerRef.current || !deviceId) throw new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos.");
       await playerRef.current.activateElement();
-      await spotifyApi(`/me/player/previous?device_id=${encodeURIComponent(deviceId)}`, { method: "POST" });
-      setPlayback(previousState => ({ ...previousState, position: 0, stopped: false, queueIndex: queue ? targetIndex : previousState.queueIndex }));
+      if (queue?.mode === "local") {
+        await spotifyApi(`/me/player/play?device_id=${encodeURIComponent(deviceId)}`, { method: "PUT", body: JSON.stringify({ uris: queue.tracks.slice(targetIndex).map(item => item.uri), position_ms: 0 }) });
+        setPlayback(previousState => ({ ...previousState, track: targetTrack || previousState.track, duration: targetTrack?.duration_ms || previousState.duration, position: 0, isPlaying: true, stopped: false, queueIndex: targetIndex }));
+      } else {
+        await spotifyApi(`/me/player/previous?device_id=${encodeURIComponent(deviceId)}`, { method: "POST" });
+        setPlayback(previousState => ({ ...previousState, position: 0, stopped: false, queueIndex: queue ? targetIndex : previousState.queueIndex }));
+      }
     } catch (reason) { fail(reason); }
   }, [demo, deviceId, playback.stopped, playback.track, fail]);
 
@@ -432,8 +529,13 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       }
       if (!playerRef.current || !deviceId) throw new Error("O toca-discos ainda está iniciando. Aguarde alguns segundos.");
       await playerRef.current.activateElement();
-      await spotifyApi(`/me/player/next?device_id=${encodeURIComponent(deviceId)}`, { method: "POST" });
-      setPlayback(previousState => ({ ...previousState, position: 0, stopped: false, queueIndex: queue ? targetIndex : previousState.queueIndex }));
+      if (queue?.mode === "local") {
+        await spotifyApi(`/me/player/play?device_id=${encodeURIComponent(deviceId)}`, { method: "PUT", body: JSON.stringify({ uris: queue.tracks.slice(targetIndex).map(item => item.uri), position_ms: 0 }) });
+        setPlayback(previousState => ({ ...previousState, track: targetTrack || previousState.track, duration: targetTrack?.duration_ms || previousState.duration, position: 0, isPlaying: true, stopped: false, queueIndex: targetIndex }));
+      } else {
+        await spotifyApi(`/me/player/next?device_id=${encodeURIComponent(deviceId)}`, { method: "POST" });
+        setPlayback(previousState => ({ ...previousState, position: 0, stopped: false, queueIndex: queue ? targetIndex : previousState.queueIndex }));
+      }
     } catch (reason) { fail(reason); }
   }, [demo, deviceId, playback.stopped, playback.track, fail]);
 
@@ -536,6 +638,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     setProfile({ display_name: "Visitante" });
     setLibrary({ playlists: [demoPlaylist], albums: [demoAlbum], artists: [demoArtist], tracks: [demoItem] });
     setPlayback(initialPlayback);
+    setPlaybackSource("");
   }, []);
 
   const restartDemo = useCallback(async () => {
@@ -562,9 +665,10 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
     setLibrary({ playlists: [], albums: [], artists: [], tracks: [] });
     setPlayback(initialPlayback);
+    setPlaybackSource("");
   }, []);
 
   const playerReady = demo || Boolean(deviceId);
-  const value = useMemo<SpotifyContextValue>(() => ({ authenticated, demo, ready, playerReady, profile, demoFinished, tone, playback, deviceId, library, login: beginSpotifyLogin, enterDemo, restartDemo, logout, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, stop, previous, next, seek, setVolume, setBalance, setBass, setTreble, setShuffle, setRepeat, toggleLike, liked, error, clearError: () => setError("") }), [authenticated, demo, ready, playerReady, profile, demoFinished, tone, playback, deviceId, library, enterDemo, restartDemo, logout, loadLibrary, loadDetails, search, playItem, activateDevice, toggle, stop, previous, next, seek, setVolume, setBalance, setBass, setTreble, setShuffle, setRepeat, toggleLike, liked, error]);
+  const value = useMemo<SpotifyContextValue>(() => ({ authenticated, demo, ready, playerReady, profile, demoFinished, tone, playback, playbackSource, deviceId, library, login: beginSpotifyLogin, enterDemo, restartDemo, logout, loadLibrary, loadDetails, search, playItem, playArtistMix, activateDevice, toggle, stop, previous, next, seek, setVolume, setBalance, setBass, setTreble, setShuffle, setRepeat, toggleLike, liked, error, clearError: () => setError("") }), [authenticated, demo, ready, playerReady, profile, demoFinished, tone, playback, playbackSource, deviceId, library, enterDemo, restartDemo, logout, loadLibrary, loadDetails, search, playItem, playArtistMix, activateDevice, toggle, stop, previous, next, seek, setVolume, setBalance, setBass, setTreble, setShuffle, setRepeat, toggleLike, liked, error]);
   return <SpotifyContext.Provider value={value}>{children}</SpotifyContext.Provider>;
 }

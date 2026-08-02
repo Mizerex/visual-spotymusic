@@ -7,7 +7,7 @@ export type SpotifyTrack = {
   name: string;
   duration_ms: number;
   album: { id?: string; name: string; uri?: string; images: SpotifyImage[]; total_tracks?: number };
-  artists: { name: string; uri?: string }[];
+  artists: { id?: string; name: string; uri?: string }[];
   external_urls?: { spotify?: string };
   track_number?: number;
   is_playable?: boolean;

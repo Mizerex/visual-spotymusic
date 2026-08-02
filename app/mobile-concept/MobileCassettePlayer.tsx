@@ -7,7 +7,7 @@ import { levelToVolume, volumeToLevel } from "@/utils/volume";
 import styles from "./mobile-concept.module.css";
 
 const RETURN_PATH_KEY = "visual_spotymusic_post_auth_path";
-type Drawer = LibraryCategory | "more" | "equalizer" | null;
+type Drawer = LibraryCategory | "radio" | "more" | "equalizer" | null;
 
 function rememberMobileReturnPath() {
   for (const storageName of ["sessionStorage", "localStorage"] as const) {
@@ -34,6 +34,7 @@ export function MobileCassettePlayer() {
     playerReady,
     profile,
     playback,
+    playbackSource,
     library,
     login,
     enterDemo,
@@ -41,7 +42,9 @@ export function MobileCassettePlayer() {
     logout,
     loadLibrary,
     loadDetails,
+    search,
     playItem,
+    playArtistMix,
     activateDevice,
     toggle,
     stop,
@@ -59,6 +62,9 @@ export function MobileCassettePlayer() {
   const [loginMessage, setLoginMessage] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [radioQuery, setRadioQuery] = useState("");
+  const [radioResults, setRadioResults] = useState<LibraryItem[]>([]);
+  const [radioSearching, setRadioSearching] = useState(false);
   const leftReelRef = useRef<HTMLElement | null>(null);
   const rightReelRef = useRef<HTMLElement | null>(null);
   const equalizerBarsRef = useRef<Array<HTMLSpanElement | null>>([]);
@@ -69,8 +75,8 @@ export function MobileCassettePlayer() {
   const track = playback.track;
   const cover = track?.album.images?.[0]?.url;
   const volumeLevel = volumeToLevel(playback.volume);
-  const activeCategory: LibraryCategory | null = drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" ? drawer : null;
-  const drawerItems = activeCategory ? library[activeCategory] : [];
+  const activeCategory: LibraryCategory | null = drawer === "radio" ? "artists" : drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" ? drawer : null;
+  const drawerItems = drawer === "radio" && radioQuery.trim() ? radioResults : activeCategory ? library[activeCategory] : [];
   const tapeProgress = playback.duration ? Math.max(0, Math.min(1, playback.position / playback.duration)) : 0;
   const showingSelector = !track || selectorOpen;
   visualStateRef.current = { position: playback.position, duration: playback.duration, volume: playback.volume };
@@ -84,6 +90,27 @@ export function MobileCassettePlayer() {
     });
     return () => { active = false; };
   }, [activeCategory, authenticated, library, loadLibrary]);
+
+  useEffect(() => {
+    if (drawer !== "radio" || !radioQuery.trim()) {
+      setRadioResults([]);
+      setRadioSearching(false);
+      return;
+    }
+    let active = true;
+    const timer = window.setTimeout(() => {
+      setRadioSearching(true);
+      search(radioQuery).then(results => {
+        if (active) setRadioResults(results.artists);
+      }).finally(() => {
+        if (active) setRadioSearching(false);
+      });
+    }, 320);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [drawer, radioQuery, search]);
 
   const progressPercent = useMemo(() => {
     if (!playback.duration) return 0;
@@ -187,6 +214,20 @@ export function MobileCassettePlayer() {
   };
 
   const selectItem = async (item: LibraryItem) => {
+    if (drawer === "radio" && item.kind === "artist") {
+      setLoadingLibrary(true);
+      try {
+        const started = await playArtistMix(item);
+        if (!started) return;
+        setSelectorOpen(false);
+        setDrawer(null);
+        setRadioQuery("");
+      } finally {
+        setLoadingLibrary(false);
+      }
+      return;
+    }
+
     if (item.kind === "track") {
       await playItem(item);
       setSelectorOpen(false);
@@ -198,7 +239,13 @@ export function MobileCassettePlayer() {
     try {
       const tracks = await loadDetails(item);
       if (!tracks.length) return;
-      await playItem(tracks[0], { uri: item.uri, tracks, index: 0 });
+      await playItem(tracks[0], {
+        uri: item.kind === "artist" ? `local:artist:${item.id}` : item.uri,
+        tracks,
+        index: 0,
+        mode: item.kind === "artist" ? "local" : "context",
+        label: item.kind === "artist" ? `Músicas de ${item.name}` : item.name,
+      });
       setSelectorOpen(false);
       setDrawer(null);
     } finally {
@@ -266,7 +313,7 @@ export function MobileCassettePlayer() {
                 <button type="button" onClick={() => openSource("albums")}><b>▣</b><span>Álbuns</span></button>
                 <button type="button" onClick={() => openSource("playlists")}><b>≡</b><span>Playlists</span></button>
                 <button type="button" onClick={() => openSource("artists")}><b>●</b><span>Artistas</span></button>
-                <button type="button" disabled title="Rádio ainda não disponível nesta integração"><b>◉</b><span>Rádio</span><small>Indisponível</small></button>
+                <button type="button" onClick={() => setDrawer("radio")}><b>◉</b><span>Rádio</span><small>Mix do artista</small></button>
               </div>
             </>
           ) : (
@@ -279,7 +326,7 @@ export function MobileCassettePlayer() {
                 <small>{playback.isPlaying ? "PLAYING" : playback.stopped ? "STOPPED" : "PAUSED"}</small>
                 <strong>{track.name}</strong>
                 <b>{track.artists.map(artist => artist.name).join(", ")}</b>
-                <span>{track.album.name}</span>
+                <span>{playbackSource || track.album.name}</span>
               </div>
             </>
           )}
@@ -338,20 +385,26 @@ export function MobileCassettePlayer() {
             <header>
               <div>
                 <small>VISUAL SPOTYMUSIC</small>
-                <strong>{drawer === "tracks" ? "Biblioteca" : drawer === "playlists" ? "Playlists" : drawer === "albums" ? "Álbuns" : drawer === "artists" ? "Artistas" : drawer === "equalizer" ? "Equalizador" : "Mais opções"}</strong>
+                <strong>{drawer === "tracks" ? "Biblioteca" : drawer === "playlists" ? "Playlists" : drawer === "albums" ? "Álbuns" : drawer === "artists" ? "Artistas" : drawer === "radio" ? "Mix do artista" : drawer === "equalizer" ? "Equalizador" : "Mais opções"}</strong>
               </div>
               <button type="button" onClick={() => setDrawer(null)} aria-label="Fechar painel">×</button>
             </header>
 
-            {(drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists") && (
+            {(drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" || drawer === "radio") && (
               <div className={styles.drawerList}>
-                {loadingLibrary ? <p>Carregando…</p> : drawerItems.length ? drawerItems.map(item => (
+                {drawer === "radio" && (
+                  <label className={styles.artistSearch}>
+                    <span>Artista seguido ou pesquisado</span>
+                    <input value={radioQuery} onChange={event => setRadioQuery(event.target.value)} placeholder="Pesquisar artista" type="search" />
+                  </label>
+                )}
+                {loadingLibrary || radioSearching ? <p>Carregando…</p> : drawerItems.length ? drawerItems.map(item => (
                   <button type="button" key={`${item.kind}-${item.id}`} onClick={() => void selectItem(item)}>
                     <span>{item.image ? <img src={item.image} alt="" /> : "♫"}</span>
-                    <div><strong>{item.name}</strong><small>{item.subtitle}</small></div>
+                    <div><strong>{item.name}</strong><small>{drawer === "radio" ? "Músicas deste artista" : item.subtitle}</small></div>
                     <b>›</b>
                   </button>
-                )) : <p>Nenhum item disponível nesta categoria.</p>}
+                )) : <p>{drawer === "radio" ? "Nenhum artista encontrado." : "Nenhum item disponível nesta categoria."}</p>}
               </div>
             )}
 

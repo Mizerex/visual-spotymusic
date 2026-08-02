@@ -526,6 +526,38 @@
   font-size: 12px;
 }
 
+.artistSearch {
+  display: grid;
+  gap: 5px;
+  padding: 8px;
+  border-bottom: 1px solid rgba(120, 81, 43, .55);
+}
+
+.artistSearch span {
+  color: #c59b63;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.artistSearch input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  border: 1px solid #70502f;
+  border-radius: 6px;
+  outline: none;
+  color: #f1dfc3;
+  background: #110c08;
+  font: inherit;
+  font-size: 11px;
+}
+
+.artistSearch input:focus {
+  border-color: #e79025;
+  box-shadow: 0 0 0 2px rgba(231, 144, 37, .16);
+}
+
 .drawerList > button {
   width: 100%;
   display: grid;
