@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 import type { LibraryCategory, LibraryItem } from "@/types/spotify";
 import { levelToVolume, volumeToLevel } from "@/utils/volume";
@@ -67,8 +68,9 @@ export function MobileCassettePlayer() {
   const [radioResults, setRadioResults] = useState<LibraryItem[]>([]);
   const [radioSearching, setRadioSearching] = useState(false);
   const [transportFlash, setTransportFlash] = useState<TransportFlash>(null);
-  const leftReelRef = useRef<HTMLElement | null>(null);
-  const rightReelRef = useRef<HTMLElement | null>(null);
+  const [sourceArtwork, setSourceArtwork] = useState<{ label: string; url: string } | null>(null);
+  const leftReelRef = useRef<HTMLImageElement | null>(null);
+  const rightReelRef = useRef<HTMLImageElement | null>(null);
   const equalizerBarsRef = useRef<Array<HTMLSpanElement | null>>([]);
   const reelAnglesRef = useRef<[number, number]>([0, 0]);
   const reelBoostRef = useRef({ until: 0, direction: 1 });
@@ -77,10 +79,10 @@ export function MobileCassettePlayer() {
 
   const track = playback.track;
   const cover = track?.album.images?.[0]?.url;
+  const cassetteArtwork = sourceArtwork?.label === playbackSource ? sourceArtwork.url : cover;
   const volumeLevel = volumeToLevel(playback.volume);
   const activeCategory: LibraryCategory | null = drawer === "radio" ? "artists" : drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" ? drawer : null;
   const drawerItems = drawer === "radio" && radioQuery.trim() ? radioResults : activeCategory ? library[activeCategory] : [];
-  const tapeProgress = playback.duration ? Math.max(0, Math.min(1, playback.position / playback.duration)) : 0;
   const playbackEnded = Boolean(track && !playback.isPlaying && playback.duration > 0 && playback.position >= playback.duration - 250);
   const transportStopped = playback.stopped || playbackEnded;
   const showingSelector = !track || selectorOpen;
@@ -252,6 +254,7 @@ export function MobileCassettePlayer() {
       try {
         const started = await playArtistMix(item);
         if (!started) return;
+        setSourceArtwork(null);
         setSelectorOpen(false);
         setDrawer(null);
         setRadioQuery("");
@@ -263,6 +266,7 @@ export function MobileCassettePlayer() {
 
     if (item.kind === "track") {
       await playItem(item);
+      setSourceArtwork(null);
       setSelectorOpen(false);
       setDrawer(null);
       return;
@@ -279,6 +283,7 @@ export function MobileCassettePlayer() {
         mode: item.kind === "artist" ? "local" : "context",
         label: item.kind === "artist" ? `Músicas de ${item.name}` : item.name,
       });
+      setSourceArtwork(item.kind !== "artist" && item.image ? { label: item.name, url: item.image } : null);
       setSelectorOpen(false);
       setDrawer(null);
     } finally {
@@ -322,16 +327,30 @@ export function MobileCassettePlayer() {
           decoding="sync"
         />
 
-        <i
+        {cassetteArtwork && (
+          <span className={styles.cassetteArtwork}>
+            <img src={cassetteArtwork} alt={`Arte de ${playbackSource || track?.album.name || "conteúdo atual"}`} />
+          </span>
+        )}
+
+        <img
           ref={leftReelRef}
           className={`${styles.cassetteReel} ${styles.leftReel}`}
-          style={{ width: `${11.7 - tapeProgress * 2.4}%` }}
+          src="/mobile-cassette-left-reel.png"
+          alt=""
+          width="131"
+          height="130"
+          decoding="sync"
           aria-hidden="true"
         />
-        <i
+        <img
           ref={rightReelRef}
           className={`${styles.cassetteReel} ${styles.rightReel}`}
-          style={{ width: `${9.3 + tapeProgress * 2.4}%` }}
+          src="/mobile-cassette-right-reel.png"
+          alt=""
+          width="131"
+          height="130"
+          decoding="sync"
           aria-hidden="true"
         />
 
@@ -413,16 +432,22 @@ export function MobileCassettePlayer() {
           {Array.from({ length: 9 }, (_, index) => <span key={index} ref={element => { equalizerBarsRef.current[index] = element; }} />)}
         </div>
 
-        <input
-          className={styles.volumeRange}
-          type="range"
-          min="0"
-          max="100"
-          value={volumeLevel}
-          onChange={event => void setVolume(levelToVolume(Number(event.target.value)))}
-          aria-label="Volume"
-        />
-        <i className={styles.volumeThumb} style={{ top: `${72.5 + (100 - volumeLevel) * 0.115}%` }} aria-hidden="true" />
+        <div
+          className={styles.volumeControl}
+          style={{ "--volume-fill": `${volumeLevel * .69}%` } as CSSProperties}
+        >
+          <i className={styles.volumeLevel} aria-hidden="true" />
+          <input
+            className={styles.volumeRange}
+            type="range"
+            min="0"
+            max="100"
+            value={volumeLevel}
+            onChange={event => void setVolume(levelToVolume(Number(event.target.value)))}
+            aria-label="Volume"
+          />
+          <span className={styles.volumeLabel} aria-hidden="true">VOLUME</span>
+        </div>
 
         <nav className={styles.bottomHotspots} aria-label="Navegação mobile">
           <button type="button" onClick={() => openDrawer("tracks")} aria-label="Biblioteca" />
