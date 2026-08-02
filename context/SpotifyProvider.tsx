@@ -395,6 +395,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       if (demo) {
         const i = queue ? targetIndex : Math.max(0, demoTracks.findIndex(track => track.id === playback.track?.id) - 1);
         const track = targetTrack || demoTracks[i];
+        if (demoAudioRef.current) demoAudioRef.current.currentTime = 0;
         setPlayback(previousState => ({ ...previousState, track, duration: track.duration_ms, position: 0, stopped: false, queueIndex: queue ? targetIndex : i, queueLength: queue?.tracks.length || demoTracks.length }));
         return;
       }
@@ -422,6 +423,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
       if (demo) {
         const i = queue ? targetIndex : Math.min(demoTracks.length - 1, Math.max(0, demoTracks.findIndex(track => track.id === playback.track?.id)) + 1);
         const track = targetTrack || demoTracks[i];
+        if (demoAudioRef.current) demoAudioRef.current.currentTime = 0;
         setPlayback(previousState => ({ ...previousState, track, duration: track.duration_ms, position: 0, stopped: false, queueIndex: queue ? targetIndex : i, queueLength: queue?.tracks.length || demoTracks.length }));
         return;
       }
