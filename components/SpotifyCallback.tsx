@@ -3,6 +3,29 @@
 import { useEffect, useRef, useState } from "react";
 import { clearPendingSpotifyLogin, exchangeCallback } from "@/services/spotifyAuth";
 
+const RETURN_PATH_KEY = "visual_spotymusic_post_auth_path";
+
+function consumeReturnPath() {
+  let selected = "/";
+  for (const storageName of ["sessionStorage", "localStorage"] as const) {
+    try {
+      const storage = window[storageName];
+      const value = storage.getItem(RETURN_PATH_KEY);
+      if (value?.startsWith("/") && !value.startsWith("//")) selected = value;
+      storage.removeItem(RETURN_PATH_KEY);
+    } catch {
+      /* O Safari pode ter limpado ou bloqueado um dos armazenamentos. */
+    }
+  }
+  return selected;
+}
+
+function clearReturnPath() {
+  for (const storageName of ["sessionStorage", "localStorage"] as const) {
+    try { window[storageName].removeItem(RETURN_PATH_KEY); } catch { /* Sem ação necessária. */ }
+  }
+}
+
 export function SpotifyCallback() {
   const [message, setMessage] = useState("Conectando ao Spotify...");
   const started = useRef(false);
@@ -18,6 +41,7 @@ export function SpotifyCallback() {
 
     if (denied) {
       clearPendingSpotifyLogin();
+      clearReturnPath();
       setMessage("A conexão foi cancelada. Volte ao início e tente novamente quando quiser.");
       return;
     }
@@ -27,7 +51,10 @@ export function SpotifyCallback() {
     }
 
     exchangeCallback(code, state)
-      .then(() => window.location.replace(new URL("/", window.location.origin).toString()))
+      .then(() => {
+        const target = consumeReturnPath();
+        window.location.replace(new URL(target, window.location.origin).toString());
+      })
       .catch(error => setMessage(error instanceof Error ? error.message : "Não foi possível concluir a conexão com o Spotify."));
   }, []);
 
