@@ -1,5 +1,6 @@
 name: Mobile cassette validation
 
+# Workflow temporário de validação da branch mobile; não publica nem altera a main.
 on:
   push:
     branches:
