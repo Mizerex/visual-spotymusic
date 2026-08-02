@@ -1,15 +1,36 @@
 "use client";
-import { useEffect, useState } from "react";
-import { exchangeCallback } from "@/services/spotifyAuth";
+
+import { useEffect, useRef, useState } from "react";
+import { clearPendingSpotifyLogin, exchangeCallback } from "@/services/spotifyAuth";
+
 export function SpotifyCallback() {
   const [message, setMessage] = useState("Conectando ao Spotify...");
+  const started = useRef(false);
+
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+
     const params = new URLSearchParams(window.location.search);
-    const code = params.get("code"), state = params.get("state"), denied = params.get("error");
-    if (denied) { setMessage("Acesso cancelado. Você pode fechar esta tela e tentar novamente."); return; }
-    if (!code || !state) { setMessage("A resposta do Spotify está incompleta."); return; }
-    exchangeCallback(code, state).then(() => window.location.replace("/")).catch(error => setMessage(error.message));
+    const code = params.get("code");
+    const state = params.get("state");
+    const denied = params.get("error");
+
+    if (denied) {
+      clearPendingSpotifyLogin();
+      setMessage("A conexão foi cancelada. Volte ao início e tente novamente quando quiser.");
+      return;
+    }
+    if (!code || !state) {
+      setMessage("A resposta do Spotify está incompleta. Volte ao início e conecte novamente.");
+      return;
+    }
+
+    exchangeCallback(code, state)
+      .then(() => window.location.replace(new URL("/", window.location.origin).toString()))
+      .catch(error => setMessage(error instanceof Error ? error.message : "Não foi possível concluir a conexão com o Spotify."));
   }, []);
+
   return (
     <main className="callback-screen">
       <div className="loading-record" />
