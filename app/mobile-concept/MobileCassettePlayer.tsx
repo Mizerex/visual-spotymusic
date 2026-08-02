@@ -81,6 +81,8 @@ export function MobileCassettePlayer() {
   const activeCategory: LibraryCategory | null = drawer === "radio" ? "artists" : drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" ? drawer : null;
   const drawerItems = drawer === "radio" && radioQuery.trim() ? radioResults : activeCategory ? library[activeCategory] : [];
   const tapeProgress = playback.duration ? Math.max(0, Math.min(1, playback.position / playback.duration)) : 0;
+  const playbackEnded = Boolean(track && !playback.isPlaying && playback.duration > 0 && playback.position >= playback.duration - 250);
+  const transportStopped = playback.stopped || playbackEnded;
   const showingSelector = !track || selectorOpen;
   visualStateRef.current = { position: playback.position, duration: playback.duration, volume: playback.volume };
 
@@ -385,13 +387,13 @@ export function MobileCassettePlayer() {
           <i className={`${styles.transportLight} ${styles.previousLight} ${transportFlash === "previous" ? styles.transportLightOn : ""}`}>
             <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
           </i>
-          <i className={`${styles.transportLight} ${styles.pauseLight} ${track && !playback.isPlaying && !playback.stopped ? styles.transportLightOn : ""}`}>
+          <i className={`${styles.transportLight} ${styles.pauseLight} ${track && !playback.isPlaying && !transportStopped ? styles.transportLightOn : ""}`}>
             <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
           </i>
           <i className={`${styles.transportLight} ${styles.playLight} ${playback.isPlaying ? styles.transportLightOn : ""}`}>
             <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
           </i>
-          <i className={`${styles.transportLight} ${styles.stopLight} ${track && playback.stopped ? styles.transportLightOn : ""}`}>
+          <i className={`${styles.transportLight} ${styles.stopLight} ${track && transportStopped ? styles.transportLightOn : ""}`}>
             <img src="/mobile-controls-on.png" alt="" width="1492" height="1024" decoding="sync" />
           </i>
           <i className={`${styles.transportLight} ${styles.nextLight} ${transportFlash === "next" ? styles.transportLightOn : ""}`}>
