@@ -1,0 +1,120 @@
+name: Mobile cassette validation
+
+on:
+  push:
+    branches:
+      - feat/mobile-cassette-ui
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Install browser test tooling
+        run: |
+          npm install --no-save --ignore-scripts @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Create mobile interaction test
+        run: |
+          mkdir -p test-results
+          cat > mobile-cassette.spec.cjs <<'EOF'
+          const { test, expect, devices } = require('@playwright/test');
+
+          test.use({ ...devices['iPhone 13'] });
+
+          test('mobile cassette demo and controls', async ({ page }) => {
+            const consoleErrors = [];
+            page.on('console', message => {
+              if (message.type() === 'error') consoleErrors.push(message.text());
+            });
+            page.on('pageerror', error => consoleErrors.push(error.message));
+
+            await page.goto('http://127.0.0.1:3000/mobile-concept', { waitUntil: 'networkidle' });
+            await expect(page.getByRole('heading', { name: 'Visual SpotyMusic Mobile' })).toBeVisible();
+
+            await page.getByRole('button', { name: 'Explorar em modo demonstração' }).click();
+            await expect(page.getByLabel('Interface mobile funcional do Visual SpotyMusic')).toBeVisible();
+
+            await page.getByRole('button', { name: 'Biblioteca' }).first().click();
+            await expect(page.getByText('Biblioteca', { exact: true })).toBeVisible();
+            await page.getByRole('button', { name: /Demonstração Visual SpotyMusic/i }).click();
+            await expect(page.getByText('Demonstração Visual SpotyMusic', { exact: true })).toBeVisible();
+
+            const pauseButton = page.getByRole('button', { name: 'Pausar' });
+            const playButton = page.getByRole('button', { name: 'Reproduzir' });
+            const stopButton = page.getByRole('button', { name: 'Parar' });
+
+            await expect(pauseButton).toBeEnabled();
+            await pauseButton.click();
+            await expect(playButton).toBeEnabled();
+            await playButton.click();
+            await expect(stopButton).toBeEnabled();
+
+            const volume = page.getByRole('slider', { name: 'Volume' });
+            await volume.fill('24');
+            await expect(volume).toHaveValue('24');
+
+            await page.getByRole('button', { name: 'Abrir equalizador' }).click();
+            await expect(page.getByText('Equalizador', { exact: true })).toBeVisible();
+            await page.getByRole('button', { name: 'Fechar painel' }).click();
+
+            await stopButton.click();
+            await expect(stopButton).toBeDisabled();
+
+            await page.screenshot({ path: 'test-results/mobile-concept-functional.png', fullPage: true });
+
+            const relevantErrors = consoleErrors.filter(error =>
+              !error.includes('favicon') &&
+              !error.includes('Failed to load resource')
+            );
+            expect(relevantErrors, `Erros no console: ${relevantErrors.join('\n')}`).toEqual([]);
+          });
+          EOF
+
+      - name: Start production preview
+        run: |
+          npm start > test-results/server.log 2>&1 &
+          echo $! > test-results/server.pid
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail http://127.0.0.1:3000/mobile-concept > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat test-results/server.log
+          exit 1
+
+      - name: Run mobile browser test
+        run: npx playwright test mobile-cassette.spec.cjs --reporter=line
+
+      - name: Upload mobile test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-cassette-test-results
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
