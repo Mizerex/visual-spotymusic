@@ -10,8 +10,12 @@ const RETURN_PATH_KEY = "visual_spotymusic_post_auth_path";
 type Drawer = "tracks" | "playlists" | "more" | "equalizer" | null;
 
 function rememberMobileReturnPath() {
-  for (const storage of [window.sessionStorage, window.localStorage]) {
-    try { storage.setItem(RETURN_PATH_KEY, "/mobile-concept"); } catch { /* Safari pode bloquear um dos armazenamentos. */ }
+  for (const storageName of ["sessionStorage", "localStorage"] as const) {
+    try {
+      window[storageName].setItem(RETURN_PATH_KEY, "/mobile-concept");
+    } catch {
+      /* O Safari pode bloquear ou indisponibilizar um dos armazenamentos. */
+    }
   }
 }
 
