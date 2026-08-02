@@ -45,6 +45,9 @@ const demoTracks: SpotifyTrack[] = [demoTrack];
 
 const mapTrack = (track: SpotifyTrack): LibraryItem => ({ id: track.id, uri: track.uri, name: track.name, subtitle: `${track.artists.map(a => a.name).join(", ")} · ${track.album.name}`, image: track.album.images?.[0]?.url, kind: "track", track });
 const demoItem = mapTrack(demoTrack);
+const demoAlbum: LibraryItem = { id: "visual-spotymusic-demo-album", uri: "demo:album:visual-spotymusic", name: "Sessão de demonstração", subtitle: "Visual SpotyMusic", image: "/visual-spotymusic-icon.png", kind: "album" };
+const demoPlaylist: LibraryItem = { id: "visual-spotymusic-demo-playlist", uri: "demo:playlist:visual-spotymusic", name: "Demonstração Visual SpotyMusic", subtitle: "1 faixa", image: "/visual-spotymusic-icon.png", kind: "playlist" };
+const demoArtist: LibraryItem = { id: "visual-spotymusic-demo-artist", uri: "demo:artist:visual-spotymusic", name: "Visual SpotyMusic", subtitle: "Artista da demonstração", image: "/visual-spotymusic-icon.png", kind: "artist" };
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const withPage = (path: string, limit: number, offset: number) => `${path}${path.includes("?") ? "&" : "?"}limit=${limit}&offset=${offset}`;
 
@@ -216,9 +219,9 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     if (demo) {
       const mock: Record<Category, LibraryItem[]> = {
         tracks: [demoItem],
-        playlists: [],
-        albums: [],
-        artists: [],
+        playlists: [demoPlaylist],
+        albums: [demoAlbum],
+        artists: [demoArtist],
       };
       setLibrary(current => ({ ...current, [category]: mock[category] })); return;
     }
@@ -531,7 +534,7 @@ export function SpotifyProvider({ children }: { children: React.ReactNode }) {
     setDemo(true);
     setAuthenticated(true);
     setProfile({ display_name: "Visitante" });
-    setLibrary({ playlists: [], albums: [], artists: [], tracks: [demoItem] });
+    setLibrary({ playlists: [demoPlaylist], albums: [demoAlbum], artists: [demoArtist], tracks: [demoItem] });
     setPlayback(initialPlayback);
   }, []);
 

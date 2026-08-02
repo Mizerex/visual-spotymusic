@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 import type { LibraryCategory, LibraryItem } from "@/types/spotify";
 import { levelToVolume, volumeToLevel } from "@/utils/volume";
 import styles from "./mobile-concept.module.css";
 
 const RETURN_PATH_KEY = "visual_spotymusic_post_auth_path";
-type Drawer = "tracks" | "playlists" | "more" | "equalizer" | null;
+type Drawer = LibraryCategory | "more" | "equalizer" | null;
 
 function rememberMobileReturnPath() {
   for (const storageName of ["sessionStorage", "localStorage"] as const) {
@@ -58,12 +58,22 @@ export function MobileCassettePlayer() {
   const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [connecting, setConnecting] = useState(false);
+  const [selectorOpen, setSelectorOpen] = useState(false);
+  const leftReelRef = useRef<HTMLElement | null>(null);
+  const rightReelRef = useRef<HTMLElement | null>(null);
+  const equalizerBarsRef = useRef<Array<HTMLSpanElement | null>>([]);
+  const reelAnglesRef = useRef<[number, number]>([0, 0]);
+  const reelBoostRef = useRef({ until: 0, direction: 1 });
+  const visualStateRef = useRef({ position: 0, duration: 0, volume: 0 });
 
   const track = playback.track;
   const cover = track?.album.images?.[0]?.url;
   const volumeLevel = volumeToLevel(playback.volume);
-  const activeCategory: LibraryCategory | null = drawer === "tracks" || drawer === "playlists" ? drawer : null;
+  const activeCategory: LibraryCategory | null = drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" ? drawer : null;
   const drawerItems = activeCategory ? library[activeCategory] : [];
+  const tapeProgress = playback.duration ? Math.max(0, Math.min(1, playback.position / playback.duration)) : 0;
+  const showingSelector = !track || selectorOpen;
+  visualStateRef.current = { position: playback.position, duration: playback.duration, volume: playback.volume };
 
   useEffect(() => {
     if (!authenticated || !activeCategory || library[activeCategory].length) return;
@@ -79,6 +89,81 @@ export function MobileCassettePlayer() {
     if (!playback.duration) return 0;
     return Math.max(0, Math.min(100, (playback.position / playback.duration) * 100));
   }, [playback.duration, playback.position]);
+
+  useEffect(() => {
+    reelAnglesRef.current = [0, 0];
+    for (const reel of [leftReelRef.current, rightReelRef.current]) {
+      reel?.getAnimations().forEach(animation => animation.cancel());
+      if (reel) reel.style.transform = "translate(-50%, -50%) rotate(0deg)";
+    }
+  }, [track?.id]);
+
+  useEffect(() => {
+    const bars = equalizerBarsRef.current;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const restingLevel = playback.isPlaying && reducedMotion ? 18 : 5;
+    bars.forEach((bar, index) => bar?.style.setProperty("--bar-level", `${restingLevel + (index % 3) * 2}%`));
+    if (!playback.isPlaying || reducedMotion) return;
+
+    let frame = 0;
+    let previousTime = performance.now();
+    let equalizerTime = 0;
+    const tick = (now: number) => {
+      const elapsed = Math.min(48, now - previousTime) / 1000;
+      previousTime = now;
+      const { position, duration, volume } = visualStateRef.current;
+      const progress = duration ? Math.max(0, Math.min(1, position / duration)) : 0;
+      const boosted = now < reelBoostRef.current.until;
+      const direction = boosted ? reelBoostRef.current.direction : 1;
+      const boost = boosted ? 4.2 : 1;
+      const leftSpeed = (72 + progress * 158) * direction * boost;
+      const rightSpeed = (230 - progress * 158) * direction * boost;
+      reelAnglesRef.current[0] += leftSpeed * elapsed;
+      reelAnglesRef.current[1] += rightSpeed * elapsed;
+      if (leftReelRef.current) leftReelRef.current.style.transform = `translate(-50%, -50%) rotate(${reelAnglesRef.current[0]}deg)`;
+      if (rightReelRef.current) rightReelRef.current.style.transform = `translate(-50%, -50%) rotate(${reelAnglesRef.current[1]}deg)`;
+
+      if (now - equalizerTime >= 80) {
+        equalizerTime = now;
+        const seconds = now / 1000 + progress * 2.4;
+        const amplitude = .2 + Math.max(0, Math.min(1, volume)) * .78;
+        bars.forEach((bar, index) => {
+          const frequency = index < 3 ? .72 + index * .08 : index < 6 ? 1.08 + (index - 3) * .16 : 1.62 + (index - 6) * .23;
+          const primary = (Math.sin(seconds * frequency * Math.PI * 2 + index * 1.31) + 1) / 2;
+          const secondary = (Math.sin(seconds * frequency * .47 * Math.PI * 2 + index * .73) + 1) / 2;
+          const level = Math.min(96, 7 + amplitude * (25 + primary * 47 + secondary * 17));
+          bar?.style.setProperty("--bar-level", `${level}%`);
+        });
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [playback.isPlaying, track?.id]);
+
+  useEffect(() => () => {
+    for (const reel of [leftReelRef.current, rightReelRef.current]) {
+      reel?.getAnimations().forEach(animation => animation.cancel());
+    }
+  }, []);
+
+  const triggerReelBurst = useCallback((direction: -1 | 1) => {
+    reelBoostRef.current = { until: performance.now() + 360, direction };
+    if (playback.isPlaying || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    [leftReelRef.current, rightReelRef.current].forEach((reel, index) => {
+      if (!reel) return;
+      const start = reelAnglesRef.current[index];
+      const finish = start + direction * 230;
+      const animation = reel.animate([
+        { transform: `translate(-50%, -50%) rotate(${start}deg)` },
+        { transform: `translate(-50%, -50%) rotate(${finish}deg)` },
+      ], { duration: 320, easing: "cubic-bezier(.2,.75,.25,1)" });
+      animation.finished.then(() => {
+        reelAnglesRef.current[index] = finish;
+        reel.style.transform = `translate(-50%, -50%) rotate(${finish}deg)`;
+      }).catch(() => undefined);
+    });
+  }, [playback.isPlaying]);
 
   const connect = async () => {
     if (connecting) return;
@@ -97,9 +182,14 @@ export function MobileCassettePlayer() {
     setDrawer(current => current === nextDrawer ? null : nextDrawer);
   };
 
+  const openSource = (category: Exclude<LibraryCategory, "tracks">) => {
+    setDrawer(category);
+  };
+
   const selectItem = async (item: LibraryItem) => {
     if (item.kind === "track") {
       await playItem(item);
+      setSelectorOpen(false);
       setDrawer(null);
       return;
     }
@@ -109,6 +199,7 @@ export function MobileCassettePlayer() {
       const tracks = await loadDetails(item);
       if (!tracks.length) return;
       await playItem(tracks[0], { uri: item.uri, tracks, index: 0 });
+      setSelectorOpen(false);
       setDrawer(null);
     } finally {
       setLoadingLibrary(false);
@@ -151,43 +242,77 @@ export function MobileCassettePlayer() {
           decoding="sync"
         />
 
+        <i
+          ref={leftReelRef}
+          className={`${styles.cassetteReel} ${styles.leftReel}`}
+          style={{ width: `${11.7 - tapeProgress * 2.4}%` }}
+          aria-hidden="true"
+        />
+        <i
+          ref={rightReelRef}
+          className={`${styles.cassetteReel} ${styles.rightReel}`}
+          style={{ width: `${9.3 + tapeProgress * 2.4}%` }}
+          aria-hidden="true"
+        />
+
         <button className={`${styles.hotspot} ${styles.menuHotspot}`} type="button" onClick={() => openDrawer("tracks")} aria-label="Abrir biblioteca" />
         <button className={`${styles.hotspot} ${styles.equalizerHotspot}`} type="button" onClick={() => openDrawer("equalizer")} aria-label="Abrir equalizador" />
 
-        <section className={styles.nowOverlay} aria-label="Música atual">
-          <div className={styles.coverSlot}>
-            {cover ? <img src={cover} alt={`Capa de ${track?.album.name || "álbum"}`} /> : <span>♫</span>}
-          </div>
-          <div className={styles.trackText}>
-            <small>{playback.isPlaying ? "NOW PLAYING" : playback.stopped ? "STOPPED" : "PAUSED"}</small>
-            <strong>{track?.name || "Escolha uma música"}</strong>
-            <b>{track?.artists.map(artist => artist.name).join(", ") || profile?.display_name || "Visual SpotyMusic"}</b>
-            <span>{track?.album.name || (demo ? "Modo demonstração" : playerReady ? "Player pronto" : "Conectando o player")}</span>
-          </div>
+        <section className={`${styles.nowOverlay} ${showingSelector ? styles.selectorOverlay : ""}`} aria-label={showingSelector ? "Selecionar conteúdo" : "Música atual"}>
+          {showingSelector ? (
+            <>
+              <small className={styles.selectorLabel}>{track ? "TROCAR CONTEÚDO" : "ESCOLHA UMA FONTE"}</small>
+              <div className={styles.sourceGrid}>
+                <button type="button" onClick={() => openSource("albums")}><b>▣</b><span>Álbuns</span></button>
+                <button type="button" onClick={() => openSource("playlists")}><b>≡</b><span>Playlists</span></button>
+                <button type="button" onClick={() => openSource("artists")}><b>●</b><span>Artistas</span></button>
+                <button type="button" disabled title="Rádio ainda não disponível nesta integração"><b>◉</b><span>Rádio</span><small>Indisponível</small></button>
+              </div>
+            </>
+          ) : (
+            <>
+              <button className={styles.changeSourceButton} type="button" onClick={() => setSelectorOpen(true)}>Trocar</button>
+              <div className={styles.coverSlot}>
+                {cover ? <img src={cover} alt={`Capa de ${track.album.name || "álbum"}`} /> : <span>♫</span>}
+              </div>
+              <div className={styles.trackText}>
+                <small>{playback.isPlaying ? "PLAYING" : playback.stopped ? "STOPPED" : "PAUSED"}</small>
+                <strong>{track.name}</strong>
+                <b>{track.artists.map(artist => artist.name).join(", ")}</b>
+                <span>{track.album.name}</span>
+              </div>
+            </>
+          )}
         </section>
 
-        <input
-          className={styles.progressRange}
-          type="range"
-          min="0"
-          max={Math.max(1, playback.duration)}
-          value={Math.min(playback.position, Math.max(1, playback.duration))}
-          disabled={!track}
-          onChange={event => void seek(Number(event.target.value))}
-          aria-label="Posição da música"
-        />
-        <span className={styles.currentTime}>{formatTime(playback.position)}</span>
-        <span className={styles.durationTime}>{formatTime(playback.duration)}</span>
-        <i className={styles.progressFill} style={{ width: `${progressPercent * 0.73}%` }} aria-hidden="true" />
-
-        <i className={styles.vuNeedle} aria-hidden="true" />
+        {track && !showingSelector && (
+          <>
+            <input
+              className={styles.progressRange}
+              type="range"
+              min="0"
+              max={Math.max(1, playback.duration)}
+              value={Math.min(playback.position, Math.max(1, playback.duration))}
+              onChange={event => void seek(Number(event.target.value))}
+              aria-label="Posição da música"
+            />
+            <span className={styles.currentTime}>{formatTime(playback.position)}</span>
+            <span className={styles.durationTime}>{formatTime(playback.duration)}</span>
+            <i className={styles.progressFill} style={{ width: `${progressPercent * 0.73}%` }} aria-hidden="true" />
+          </>
+        )}
 
         <div className={styles.transportHotspots} aria-label="Controles de reprodução">
-          <button type="button" onClick={() => void previous()} disabled={!track} aria-label="Faixa anterior" />
+          <button type="button" onClick={() => { triggerReelBurst(-1); void previous(); }} disabled={!track} aria-label="Faixa anterior" />
           <button type="button" onClick={() => { if (playback.isPlaying) void toggle(); }} disabled={!track || !playback.isPlaying} aria-label="Pausar" />
           <button type="button" onClick={() => { if (!playback.isPlaying) void toggle(); }} disabled={!track || playback.isPlaying} aria-label="Reproduzir" />
           <button type="button" onClick={() => void stop()} disabled={!track || playback.stopped} aria-label="Parar" />
-          <button type="button" onClick={() => void next()} disabled={!track} aria-label="Próxima faixa" />
+          <button type="button" onClick={() => { triggerReelBurst(1); void next(); }} disabled={!track} aria-label="Próxima faixa" />
+          <i className={`${styles.playLight} ${playback.isPlaying ? styles.playLightOn : ""}`} aria-hidden="true" />
+        </div>
+
+        <div className={styles.digitalEqualizer} aria-hidden="true">
+          {Array.from({ length: 9 }, (_, index) => <span key={index} ref={element => { equalizerBarsRef.current[index] = element; }} />)}
         </div>
 
         <input
@@ -213,12 +338,12 @@ export function MobileCassettePlayer() {
             <header>
               <div>
                 <small>VISUAL SPOTYMUSIC</small>
-                <strong>{drawer === "tracks" ? "Biblioteca" : drawer === "playlists" ? "Playlists" : drawer === "equalizer" ? "Equalizador" : "Mais opções"}</strong>
+                <strong>{drawer === "tracks" ? "Biblioteca" : drawer === "playlists" ? "Playlists" : drawer === "albums" ? "Álbuns" : drawer === "artists" ? "Artistas" : drawer === "equalizer" ? "Equalizador" : "Mais opções"}</strong>
               </div>
               <button type="button" onClick={() => setDrawer(null)} aria-label="Fechar painel">×</button>
             </header>
 
-            {(drawer === "tracks" || drawer === "playlists") && (
+            {(drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists") && (
               <div className={styles.drawerList}>
                 {loadingLibrary ? <p>Carregando…</p> : drawerItems.length ? drawerItems.map(item => (
                   <button type="button" key={`${item.kind}-${item.id}`} onClick={() => void selectItem(item)}>
