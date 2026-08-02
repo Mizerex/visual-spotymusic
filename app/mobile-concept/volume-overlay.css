@@ -1,0 +1,109 @@
+/* Controle de volume desenhado em CSS para substituir visualmente a arte fixa da imagem-base. */
+[class*="volumeControl"] {
+  position: absolute;
+  z-index: 9 !important;
+  right: 10.9% !important;
+  top: 68.2% !important;
+  width: 15.8% !important;
+  height: 23.1% !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid #4b2b13 !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(90deg, rgba(255, 157, 34, .05), transparent 18% 82%, rgba(255, 157, 34, .05)),
+    repeating-linear-gradient(to bottom, rgba(255, 129, 17, .18) 0 1px, transparent 1px 9%),
+    linear-gradient(90deg, #160b05, #050201 37% 63%, #170b05) !important;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, .82),
+    inset 0 0 0 1px rgba(255, 164, 53, .12),
+    inset 0 0 12px #000,
+    0 0 8px rgba(0, 0, 0, .9) !important;
+}
+
+[class*="volumeControl"]::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 8%;
+  bottom: 18%;
+  width: 20%;
+  transform: translateX(-50%);
+  border: 1px solid #2b1609;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #010101, #0d0602 44% 56%, #010101);
+  box-shadow: inset 0 0 7px #000, 0 0 3px rgba(255, 121, 15, .18);
+}
+
+[class*="volumeControl"]::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 7% 13% 18%;
+  background:
+    repeating-linear-gradient(to bottom, #9c430c 0 1px, transparent 1px 9%) left center / 27% 100% no-repeat,
+    repeating-linear-gradient(to bottom, #9c430c 0 1px, transparent 1px 9%) right center / 27% 100% no-repeat;
+  opacity: .9;
+  filter: drop-shadow(0 0 2px rgba(255, 115, 10, .3));
+  pointer-events: none;
+}
+
+[class*="volumeLevel"] {
+  z-index: 1 !important;
+  left: 47% !important;
+  bottom: 18.2% !important;
+  width: 6% !important;
+  max-height: 67% !important;
+  border-radius: 2px;
+  background: repeating-linear-gradient(to top, #ffb62f 0 5%, #ef6d12 5% 9%, #6f1807 9% 13%) !important;
+  box-shadow: 0 0 5px rgba(255, 115, 14, .78) !important;
+}
+
+[class*="volumeRange"] {
+  z-index: 3 !important;
+  left: 8% !important;
+  top: 5% !important;
+  width: 84% !important;
+  height: 78% !important;
+}
+
+[class*="volumeRange"]::-webkit-slider-thumb {
+  width: 88% !important;
+  height: clamp(24px, 6.2vw, 35px) !important;
+  border: 1px solid #ffb446 !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(to bottom, #3d1d09 0 8%, #120704 9% 43%, #ff9f1d 44% 52%, #2b1006 53% 89%, #090302 90%) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 177, 66, .18),
+    inset 0 -7px 9px #070201,
+    0 0 7px rgba(255, 128, 16, .72) !important;
+}
+
+[class*="volumeRange"]::-moz-range-thumb {
+  width: 88% !important;
+  height: clamp(24px, 6.2vw, 35px) !important;
+  border: 1px solid #ffb446 !important;
+  border-radius: 3px !important;
+  background:
+    linear-gradient(to bottom, #3d1d09 0 8%, #120704 9% 43%, #ff9f1d 44% 52%, #2b1006 53% 89%, #090302 90%) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 177, 66, .18),
+    inset 0 -7px 9px #070201,
+    0 0 7px rgba(255, 128, 16, .72) !important;
+}
+
+[class*="volumeLabel"] {
+  z-index: 2 !important;
+  bottom: 3.7% !important;
+  color: #d7a657 !important;
+  font-size: clamp(6px, 1.75vw, 10px) !important;
+  font-weight: 600 !important;
+  letter-spacing: .03em !important;
+  text-shadow: 0 1px 2px #000, 0 0 4px rgba(255, 131, 20, .26) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="volumeLevel"] { transition: none !important; }
+}
