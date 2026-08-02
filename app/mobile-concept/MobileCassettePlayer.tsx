@@ -354,6 +354,19 @@ export function MobileCassettePlayer() {
           aria-hidden="true"
         />
 
+        <img
+          className={styles.cassetteBody}
+          src="/mobile-cassette-body.png"
+          alt="Fita cassete Rich Cassette"
+          width="750"
+          height="456"
+          decoding="sync"
+        />
+
+        <div className={styles.cassettePins} aria-hidden="true">
+          <i /><i /><i /><i />
+        </div>
+
         <button className={`${styles.hotspot} ${styles.menuHotspot}`} type="button" onClick={() => openDrawer("tracks")} aria-label="Abrir biblioteca" />
         <button className={`${styles.hotspot} ${styles.equalizerHotspot}`} type="button" onClick={() => openDrawer("equalizer")} aria-label="Abrir equalizador" />
 
