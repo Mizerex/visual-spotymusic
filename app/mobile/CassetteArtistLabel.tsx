@@ -6,11 +6,12 @@ import { useSpotifyAuth } from "@/hooks/useSpotifyAuth";
 import type { LibraryItem } from "@/types/spotify";
 
 export function CassetteArtistLabel() {
-  const { playback, library, loadDetails, playItem } = useSpotifyAuth();
+  const { playback, library, loadDetails, playItem, clearError } = useSpotifyAuth();
   const [frame, setFrame] = useState<HTMLElement | null>(null);
-  const [artistTracks, setArtistTracks] = useState<LibraryItem[]>([]);
-  const [artistName, setArtistName] = useState("");
-  const [artistLoading, setArtistLoading] = useState(false);
+  const [browserTracks, setBrowserTracks] = useState<LibraryItem[]>([]);
+  const [browserName, setBrowserName] = useState("");
+  const [browserType, setBrowserType] = useState("CONTEÚDO");
+  const [browserLoading, setBrowserLoading] = useState(false);
 
   const currentArtistName = useMemo(
     () => playback.track?.artists.map(artist => artist.name).join(", ") || "",
@@ -28,7 +29,6 @@ export function CassetteArtistLabel() {
     locateFrame();
     const observer = new MutationObserver(locateFrame);
     observer.observe(document.body, { childList: true, subtree: true });
-
     return () => observer.disconnect();
   }, []);
 
@@ -38,34 +38,43 @@ export function CassetteArtistLabel() {
   }, [frame, playback.stopped]);
 
   useEffect(() => {
-    const handleArtistClick = (event: MouseEvent) => {
+    const handleLibraryClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       const button = target?.closest<HTMLButtonElement>('section[aria-label="Painel mobile"] button');
       if (!button) return;
 
       const panel = button.closest<HTMLElement>('section[aria-label="Painel mobile"]');
       const panelTitle = panel?.querySelector("header strong")?.textContent?.trim();
-      if (panelTitle !== "Artistas") return;
+      if (!panelTitle || !["Artistas", "Playlists", "Álbuns"].includes(panelTitle)) return;
 
       const name = button.querySelector("div strong")?.textContent?.trim();
       if (!name) return;
-      const artist = library.artists.find(item => item.name === name);
-      if (!artist) return;
+
+      const collection = panelTitle === "Artistas"
+        ? library.artists
+        : panelTitle === "Playlists"
+          ? library.playlists
+          : library.albums;
+      const item = collection.find(entry => entry.name === name);
+      if (!item) return;
 
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
+      clearError();
 
-      setArtistLoading(true);
-      setArtistName(artist.name);
-      void loadDetails(artist)
-        .then(tracks => setArtistTracks(tracks))
-        .finally(() => setArtistLoading(false));
+      setBrowserLoading(true);
+      setBrowserName(item.name);
+      setBrowserType(panelTitle === "Artistas" ? "ARTISTA" : panelTitle === "Playlists" ? "PLAYLIST" : "ÁLBUM");
+      setBrowserTracks([]);
+      void loadDetails(item)
+        .then(tracks => setBrowserTracks(tracks))
+        .finally(() => setBrowserLoading(false));
     };
 
-    document.addEventListener("click", handleArtistClick, true);
-    return () => document.removeEventListener("click", handleArtistClick, true);
-  }, [library.artists, loadDetails]);
+    document.addEventListener("click", handleLibraryClick, true);
+    return () => document.removeEventListener("click", handleLibraryClick, true);
+  }, [clearError, library.albums, library.artists, library.playlists, loadDetails]);
 
   const artistFontSize =
     currentArtistName.length > 30
@@ -101,9 +110,7 @@ export function CassetteArtistLabel() {
             lineHeight: 1,
           }}
         >
-          <small style={{ fontSize: "clamp(4px, 1.2vw, 6px)", fontWeight: 800, textTransform: "uppercase", whiteSpace: "nowrap" }}>
-            ARTISTA:
-          </small>
+          <small style={{ fontSize: "clamp(4px, 1.2vw, 6px)", fontWeight: 800, textTransform: "uppercase", whiteSpace: "nowrap" }}>ARTISTA:</small>
           <strong
             title={currentArtistName}
             style={{
@@ -121,18 +128,16 @@ export function CassetteArtistLabel() {
           >
             {currentArtistName}
           </strong>
-          <span style={{ justifySelf: "end", fontSize: "clamp(4px, 1.2vw, 6px)", fontWeight: 800, textTransform: "uppercase", whiteSpace: "nowrap" }}>
-            LADO&nbsp; A
-          </span>
+          <span style={{ justifySelf: "end", fontSize: "clamp(4px, 1.2vw, 6px)", fontWeight: 800, textTransform: "uppercase", whiteSpace: "nowrap" }}>LADO&nbsp; A</span>
         </div>,
         frame,
       )
     : null;
 
-  const artistBrowser = frame && (artistLoading || artistTracks.length > 0)
+  const browser = frame && (browserLoading || browserTracks.length > 0)
     ? createPortal(
         <section
-          aria-label="Músicas do artista"
+          aria-label="Músicas selecionadas"
           style={{
             position: "absolute",
             zIndex: 40,
@@ -149,35 +154,34 @@ export function CassetteArtistLabel() {
         >
           <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "14px 16px", borderBottom: "1px solid rgba(255,157,22,.22)" }}>
             <div style={{ minWidth: 0 }}>
-              <small style={{ display: "block", color: "#ff9d16", fontSize: "10px", letterSpacing: ".1em" }}>ARTISTA</small>
-              <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{artistName}</strong>
+              <small style={{ display: "block", color: "#ff9d16", fontSize: "10px", letterSpacing: ".1em" }}>{browserType}</small>
+              <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{browserName}</strong>
             </div>
             <button
               type="button"
-              onClick={() => { setArtistTracks([]); setArtistName(""); setArtistLoading(false); }}
-              aria-label="Fechar músicas do artista"
+              onClick={() => { setBrowserTracks([]); setBrowserName(""); setBrowserLoading(false); }}
+              aria-label="Fechar lista de músicas"
               style={{ border: 0, background: "transparent", color: "#f2dfbf", fontSize: "28px", lineHeight: 1, cursor: "pointer" }}
-            >
-              ×
-            </button>
+            >×</button>
           </header>
           <div style={{ flex: 1, overflowY: "auto", padding: "8px" }}>
-            {artistLoading ? (
+            {browserLoading ? (
               <p style={{ padding: "12px" }}>Carregando músicas…</p>
-            ) : artistTracks.length ? artistTracks.map((item, index) => (
+            ) : browserTracks.length ? browserTracks.map((item, index) => (
               <button
                 key={`${item.id}-${index}`}
                 type="button"
                 onClick={() => {
+                  clearError();
                   void playItem(item, {
-                    uri: `local:artist:${item.track?.artists?.[0]?.id || artistName}`,
-                    tracks: artistTracks,
+                    uri: `local:selection:${browserName}`,
+                    tracks: browserTracks,
                     index,
                     mode: "local",
-                    label: `Músicas de ${artistName}`,
+                    label: browserName,
                   });
-                  setArtistTracks([]);
-                  setArtistName("");
+                  setBrowserTracks([]);
+                  setBrowserName("");
                 }}
                 style={{
                   width: "100%",
@@ -204,7 +208,7 @@ export function CassetteArtistLabel() {
                 <b style={{ color: "#ff9d16" }}>›</b>
               </button>
             )) : (
-              <p style={{ padding: "12px" }}>Nenhuma música encontrada para este artista.</p>
+              <p style={{ padding: "12px" }}>Nenhuma música encontrada.</p>
             )}
           </div>
         </section>,
@@ -216,18 +220,32 @@ export function CassetteArtistLabel() {
     <>
       <style jsx global>{`
         [class*="cassetteArtwork"] { display: none !important; }
-        [data-transport-stopped="true"] [class*="trackText"] b { visibility: hidden !important; }
+
+        [data-transport-stopped="true"] [class*="coverSlot"],
+        [data-transport-stopped="true"] [class*="trackText"],
+        [data-transport-stopped="true"] [class*="progressRange"],
+        [data-transport-stopped="true"] [class*="currentTime"],
+        [data-transport-stopped="true"] [class*="durationTime"],
+        [data-transport-stopped="true"] [class*="progressTrack"],
+        [data-transport-stopped="true"] [class*="progressFill"] {
+          display: none !important;
+        }
+
+        [data-transport-stopped="true"] [class*="nowOverlay"] {
+          min-height: 0 !important;
+        }
+
         [class*="volumeRange"]::-webkit-slider-thumb {
-          width: 62% !important;
-          height: clamp(18px, 4.7vw, 26px) !important;
+          width: 58% !important;
+          height: clamp(17px, 4.2vw, 24px) !important;
         }
         [class*="volumeRange"]::-moz-range-thumb {
-          width: 62% !important;
-          height: clamp(18px, 4.7vw, 26px) !important;
+          width: 58% !important;
+          height: clamp(17px, 4.2vw, 24px) !important;
         }
       `}</style>
       {label}
-      {artistBrowser}
+      {browser}
     </>
   );
 }
