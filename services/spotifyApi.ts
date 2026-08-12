@@ -16,7 +16,29 @@ export async function spotifyApi<T>(path: string, init: RequestInit = {}, retry 
     return spotifyApi<T>(path, init, false);
   }
   if (!response.ok) {
-    const message = response.status === 403 ? "Este recurso exige uma conta Spotify Premium." : response.status === 404 ? "Nenhum dispositivo de reprodução foi encontrado." : "O Spotify não conseguiu concluir esta ação.";
+    let spotifyMessage = "";
+    try {
+      const data = await response.clone().json();
+      spotifyMessage = data?.error?.message || data?.error_description || "";
+    } catch {
+      /* A resposta pode não ter corpo JSON. */
+    }
+
+    const method = (init.method || "GET").toUpperCase();
+    const isPlaybackAction = method !== "GET" && (
+      path.startsWith("/me/player") ||
+      path.includes("/play") ||
+      path.includes("/pause") ||
+      path.includes("/seek") ||
+      path.includes("/next") ||
+      path.includes("/previous")
+    );
+
+    let message = "O Spotify não conseguiu concluir esta ação.";
+    if (response.status === 404) message = "Nenhum dispositivo de reprodução foi encontrado.";
+    else if (response.status === 403 && isPlaybackAction) message = "A reprodução no navegador exige uma conta Spotify Premium.";
+    else if (response.status === 403) message = spotifyMessage || "O Spotify não permitiu acessar este conteúdo da biblioteca.";
+    else if (spotifyMessage) message = spotifyMessage;
     throw new Error(message);
   }
   if (response.status === 204) return undefined as T;
