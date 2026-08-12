@@ -10,6 +10,10 @@ import styles from "./mobile-concept.module.css";
 const RETURN_PATH_KEY = "visual_spotymusic_post_auth_path";
 type Drawer = LibraryCategory | "radio" | "more" | "equalizer" | null;
 type TransportFlash = "previous" | "next" | null;
+type BrowsedSource = {
+  item: LibraryItem;
+  tracks: LibraryItem[];
+};
 
 function rememberMobileReturnPath() {
   for (const storageName of ["sessionStorage", "localStorage"] as const) {
@@ -68,7 +72,7 @@ export function MobileCassettePlayer() {
   const [radioResults, setRadioResults] = useState<LibraryItem[]>([]);
   const [radioSearching, setRadioSearching] = useState(false);
   const [transportFlash, setTransportFlash] = useState<TransportFlash>(null);
-  const [sourceArtwork, setSourceArtwork] = useState<{ label: string; url: string } | null>(null);
+  const [browsedSource, setBrowsedSource] = useState<BrowsedSource | null>(null);
   const leftReelRef = useRef<HTMLImageElement | null>(null);
   const rightReelRef = useRef<HTMLImageElement | null>(null);
   const equalizerBarsRef = useRef<Array<HTMLSpanElement | null>>([]);
@@ -78,11 +82,13 @@ export function MobileCassettePlayer() {
   const visualStateRef = useRef({ position: 0, duration: 0, volume: 0 });
 
   const track = playback.track;
-  const cover = track?.album.images?.[0]?.url;
-  const cassetteArtwork = sourceArtwork?.label === playbackSource ? sourceArtwork.url : cover;
+  const visibleTrack = playback.stopped ? null : track;
+  const cover = visibleTrack?.album.images?.[0]?.url;
+  const artistName = visibleTrack?.artists.map(artist => artist.name).join(", ") || "";
+  const artistFontSize = artistName.length > 34 ? "clamp(7px, 2.2vw, 11px)" : artistName.length > 24 ? "clamp(8px, 2.6vw, 13px)" : "clamp(10px, 3.1vw, 16px)";
   const volumeLevel = volumeToLevel(playback.volume);
-  const activeCategory: LibraryCategory | null = drawer === "radio" ? "artists" : drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" ? drawer : null;
-  const drawerItems = drawer === "radio" && radioQuery.trim() ? radioResults : activeCategory ? library[activeCategory] : [];
+  const activeCategory: LibraryCategory | null = browsedSource ? null : drawer === "radio" ? "artists" : drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" ? drawer : null;
+  const drawerItems = browsedSource?.tracks || (drawer === "radio" && radioQuery.trim() ? radioResults : activeCategory ? library[activeCategory] : []);
   const playbackEnded = Boolean(track && !playback.isPlaying && playback.duration > 0 && playback.position >= playback.duration - 250);
   const transportStopped = playback.stopped || playbackEnded;
   const showingSelector = !track || selectorOpen;
@@ -241,10 +247,12 @@ export function MobileCassettePlayer() {
   };
 
   const openDrawer = (nextDrawer: Exclude<Drawer, null>) => {
+    setBrowsedSource(null);
     setDrawer(current => current === nextDrawer ? null : nextDrawer);
   };
 
   const openSource = (category: Exclude<LibraryCategory, "tracks">) => {
+    setBrowsedSource(null);
     setDrawer(category);
   };
 
@@ -254,7 +262,6 @@ export function MobileCassettePlayer() {
       try {
         const started = await playArtistMix(item);
         if (!started) return;
-        setSourceArtwork(null);
         setSelectorOpen(false);
         setDrawer(null);
         setRadioQuery("");
@@ -265,8 +272,20 @@ export function MobileCassettePlayer() {
     }
 
     if (item.kind === "track") {
-      await playItem(item);
-      setSourceArtwork(null);
+      if (browsedSource) {
+        const index = browsedSource.tracks.findIndex(trackItem => trackItem.id === item.id);
+        const source = browsedSource.item;
+        await playItem(item, {
+          uri: source.kind === "artist" ? `local:artist:${source.id}` : source.uri,
+          tracks: browsedSource.tracks,
+          index: Math.max(0, index),
+          mode: source.kind === "artist" ? "local" : "context",
+          label: source.kind === "artist" ? `Músicas de ${source.name}` : source.name,
+        });
+      } else {
+        await playItem(item);
+      }
+      setBrowsedSource(null);
       setSelectorOpen(false);
       setDrawer(null);
       return;
@@ -276,16 +295,7 @@ export function MobileCassettePlayer() {
     try {
       const tracks = await loadDetails(item);
       if (!tracks.length) return;
-      await playItem(tracks[0], {
-        uri: item.kind === "artist" ? `local:artist:${item.id}` : item.uri,
-        tracks,
-        index: 0,
-        mode: item.kind === "artist" ? "local" : "context",
-        label: item.kind === "artist" ? `Músicas de ${item.name}` : item.name,
-      });
-      setSourceArtwork(item.kind !== "artist" && item.image ? { label: item.name, url: item.image } : null);
-      setSelectorOpen(false);
-      setDrawer(null);
+      setBrowsedSource({ item, tracks });
     } finally {
       setLoadingLibrary(false);
     }
@@ -327,9 +337,10 @@ export function MobileCassettePlayer() {
           decoding="sync"
         />
 
-        {cassetteArtwork && (
-          <span className={styles.cassetteArtwork}>
-            <img src={cassetteArtwork} alt={`Arte de ${playbackSource || track?.album.name || "conteúdo atual"}`} />
+        <span className={styles.cassetteSideLabel} aria-hidden="true">SIDE A</span>
+        {artistName && (
+          <span className={styles.cassetteArtistLabel} style={{ fontSize: artistFontSize }} aria-label={`Artista na fita: ${artistName}`} title={artistName}>
+            {artistName}
           </span>
         )}
 
@@ -368,23 +379,23 @@ export function MobileCassettePlayer() {
                 <button type="button" onClick={() => setDrawer("radio")}><b>◉</b><span>Rádio</span><small>Mix do artista</small></button>
               </div>
             </>
-          ) : (
+          ) : visibleTrack ? (
             <>
               <button className={styles.changeSourceButton} type="button" onClick={() => setSelectorOpen(true)}>Trocar</button>
               <div className={styles.coverSlot}>
-                {cover ? <img src={cover} alt={`Capa de ${track.album.name || "álbum"}`} /> : <span>♫</span>}
+                {cover ? <img src={cover} alt={`Capa de ${visibleTrack.album.name || "álbum"}`} /> : <span>♫</span>}
               </div>
               <div className={styles.trackText}>
                 <small>{playback.isPlaying ? "PLAYING" : playback.stopped ? "STOPPED" : "PAUSED"}</small>
-                <strong>{track.name}</strong>
-                <b>{track.artists.map(artist => artist.name).join(", ")}</b>
-                <span>{playbackSource || track.album.name}</span>
+                <strong>{visibleTrack.name}</strong>
+                <b>{artistName}</b>
+                <span>{playbackSource || visibleTrack.album.name}</span>
               </div>
             </>
-          )}
+          ) : null}
         </section>
 
-        {track && !showingSelector && (
+        {visibleTrack && !showingSelector && (
           <>
             <input
               className={styles.progressRange}
@@ -462,13 +473,19 @@ export function MobileCassettePlayer() {
             <header>
               <div>
                 <small>VISUAL SPOTYMUSIC</small>
-                <strong>{drawer === "tracks" ? "Biblioteca" : drawer === "playlists" ? "Playlists" : drawer === "albums" ? "Álbuns" : drawer === "artists" ? "Artistas" : drawer === "radio" ? "Mix do artista" : drawer === "equalizer" ? "Equalizador" : "Mais opções"}</strong>
+                <strong>{browsedSource?.item.name || (drawer === "tracks" ? "Biblioteca" : drawer === "playlists" ? "Playlists" : drawer === "albums" ? "Álbuns" : drawer === "artists" ? "Artistas" : drawer === "radio" ? "Mix do artista" : drawer === "equalizer" ? "Equalizador" : "Mais opções")}</strong>
               </div>
               <button type="button" onClick={() => setDrawer(null)} aria-label="Fechar painel">×</button>
             </header>
 
             {(drawer === "tracks" || drawer === "playlists" || drawer === "albums" || drawer === "artists" || drawer === "radio") && (
               <div className={styles.drawerList}>
+                {browsedSource && (
+                  <button className={styles.drawerBack} type="button" onClick={() => setBrowsedSource(null)}>
+                    <b>‹</b>
+                    <div><strong>Voltar</strong><small>{browsedSource.item.kind === "artist" ? "Artistas" : browsedSource.item.kind === "album" ? "Álbuns" : "Playlists"}</small></div>
+                  </button>
+                )}
                 {drawer === "radio" && (
                   <label className={styles.artistSearch}>
                     <span>Artista seguido ou pesquisado</span>
@@ -478,7 +495,7 @@ export function MobileCassettePlayer() {
                 {loadingLibrary || radioSearching ? <p>Carregando…</p> : drawerItems.length ? drawerItems.map(item => (
                   <button type="button" key={`${item.kind}-${item.id}`} onClick={() => void selectItem(item)}>
                     <span>{item.image ? <img src={item.image} alt="" /> : "♫"}</span>
-                    <div><strong>{item.name}</strong><small>{drawer === "radio" ? "Músicas deste artista" : item.subtitle}</small></div>
+                    <div><strong>{item.name}</strong><small>{browsedSource ? item.subtitle : drawer === "radio" ? "Músicas deste artista" : item.subtitle}</small></div>
                     <b>›</b>
                   </button>
                 )) : <p>{drawer === "radio" ? "Nenhum artista encontrado." : "Nenhum item disponível nesta categoria."}</p>}

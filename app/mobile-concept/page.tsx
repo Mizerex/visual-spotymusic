@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SpotifyProvider } from "@/context/SpotifyProvider";
-import { CassetteArtistLabel } from "../mobile/CassetteArtistLabel";
 import { MobileCassettePlayer } from "./MobileCassettePlayer";
 
 export const metadata: Metadata = {
@@ -12,7 +11,6 @@ export default function MobileConceptPage() {
   return (
     <SpotifyProvider>
       <MobileCassettePlayer />
-      <CassetteArtistLabel />
     </SpotifyProvider>
   );
 }
