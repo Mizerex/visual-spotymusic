@@ -84,42 +84,12 @@ export function CassetteArtistLabel() {
   const label = frame && currentArtistName && !explicitStop ? createPortal(
     <div
       aria-label={`Artista na fita: ${currentArtistName}`}
-      style={{
-        position: "absolute",
-        zIndex: 9,
-        left: "22.7%",
-        top: "14.05%",
-        width: "61.8%",
-        height: "4.45%",
-        display: "flex",
-        alignItems: "center",
-        boxSizing: "border-box",
-        padding: "0 2%",
-        overflow: "hidden",
-        color: "#17120d",
-        pointerEvents: "none",
-        fontFamily: "Arial Narrow, Arial, Helvetica, sans-serif",
-        lineHeight: 1,
-      }}
+      style={{ position: "absolute", zIndex: 9, left: "22.7%", top: "14.05%", width: "61.8%", height: "4.45%", display: "flex", alignItems: "center", boxSizing: "border-box", padding: "0 2%", overflow: "hidden", color: "#17120d", pointerEvents: "none", fontFamily: "Arial Narrow, Arial, Helvetica, sans-serif", lineHeight: 1 }}
     >
-      <strong
-        title={currentArtistName}
-        style={{
-          width: "100%",
-          overflow: "hidden",
-          fontSize: artistFontSize,
-          fontWeight: 900,
-          letterSpacing: ".025em",
-          textAlign: "left",
-          textOverflow: "ellipsis",
-          textTransform: "uppercase",
-          whiteSpace: "nowrap",
-        }}
-      >
+      <strong title={currentArtistName} style={{ width: "100%", overflow: "hidden", fontSize: artistFontSize, fontWeight: 900, letterSpacing: ".025em", textAlign: "left", textOverflow: "ellipsis", textTransform: "uppercase", whiteSpace: "nowrap" }}>
         {currentArtistName}
       </strong>
-    </div>,
-    frame,
+    </div>, frame
   ) : null;
 
   const browser = frame && (browserLoading || browserTracks.length > 0) ? createPortal(
@@ -143,7 +113,15 @@ export function CassetteArtistLabel() {
     [class*="cassetteArtwork"] { display: none !important; }
     [data-transport-stopped="true"] [class*="coverSlot"], [data-transport-stopped="true"] [class*="trackText"], [data-transport-stopped="true"] [class*="progressRange"], [data-transport-stopped="true"] [class*="currentTime"], [data-transport-stopped="true"] [class*="durationTime"], [data-transport-stopped="true"] [class*="progressTrack"], [data-transport-stopped="true"] [class*="progressFill"] { display: none !important; }
     [data-transport-stopped="true"] [class*="nowOverlay"] { min-height: 0 !important; }
-    [class*="volumeRange"]::-webkit-slider-thumb { width: 58% !important; height: clamp(17px, 4.2vw, 24px) !important; }
-    [class*="volumeRange"]::-moz-range-thumb { width: 58% !important; height: clamp(17px, 4.2vw, 24px) !important; }
+
+    [class*="volumeControl"] {
+      right: 13.7% !important;
+      top: 72.6% !important;
+      width: 10.4% !important;
+      height: 17.4% !important;
+    }
+    [class*="volumeRange"] { left: 8% !important; width: 84% !important; height: 78% !important; }
+    [class*="volumeRange"]::-webkit-slider-thumb { width: 54% !important; height: clamp(15px, 3.8vw, 21px) !important; }
+    [class*="volumeRange"]::-moz-range-thumb { width: 54% !important; height: clamp(15px, 3.8vw, 21px) !important; }
   `}</style>{label}{browser}</>;
 }
