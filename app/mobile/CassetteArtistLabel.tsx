@@ -12,6 +12,7 @@ export function CassetteArtistLabel() {
   const [browserName, setBrowserName] = useState("");
   const [browserType, setBrowserType] = useState("CONTEÚDO");
   const [browserLoading, setBrowserLoading] = useState(false);
+  const [explicitStop, setExplicitStop] = useState(false);
 
   const currentArtistName = useMemo(
     () => playback.track?.artists.map(artist => artist.name).join(", ") || "",
@@ -34,8 +35,26 @@ export function CassetteArtistLabel() {
 
   useEffect(() => {
     if (!frame) return;
-    frame.dataset.transportStopped = playback.stopped ? "true" : "false";
-  }, [frame, playback.stopped]);
+    frame.dataset.transportStopped = explicitStop ? "true" : "false";
+  }, [explicitStop, frame]);
+
+  useEffect(() => {
+    if (!playback.track) return;
+    if (playback.isPlaying) setExplicitStop(false);
+  }, [playback.isPlaying, playback.track?.id]);
+
+  useEffect(() => {
+    const handleTransportClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const button = target?.closest<HTMLButtonElement>('button[aria-label="Parar"]');
+      if (!button) return;
+      setExplicitStop(true);
+      clearError();
+    };
+
+    document.addEventListener("click", handleTransportClick, true);
+    return () => document.removeEventListener("click", handleTransportClick, true);
+  }, [clearError]);
 
   useEffect(() => {
     const handleLibraryClick = (event: MouseEvent) => {
@@ -62,6 +81,7 @@ export function CassetteArtistLabel() {
       event.stopPropagation();
       event.stopImmediatePropagation();
       clearError();
+      setExplicitStop(false);
 
       setBrowserLoading(true);
       setBrowserName(item.name);
@@ -83,13 +103,13 @@ export function CassetteArtistLabel() {
         ? "clamp(8px, 2.8vw, 14px)"
         : "clamp(10px, 3.5vw, 18px)";
 
-  const label = frame && currentArtistName && !playback.stopped
+  const label = frame && currentArtistName && !explicitStop
     ? createPortal(
         <div
           aria-label={`Artista: ${currentArtistName}`}
           style={{
             position: "absolute",
-            zIndex: 6,
+            zIndex: 8,
             left: "14.2%",
             top: "16.45%",
             width: "73.5%",
@@ -173,6 +193,7 @@ export function CassetteArtistLabel() {
                 type="button"
                 onClick={() => {
                   clearError();
+                  setExplicitStop(false);
                   void playItem(item, {
                     uri: `local:selection:${browserName}`,
                     tracks: browserTracks,
