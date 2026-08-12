@@ -121,7 +121,31 @@ export function CassetteArtistLabel() {
       height: 17.4% !important;
     }
     [class*="volumeRange"] { left: 8% !important; width: 84% !important; height: 78% !important; }
-    [class*="volumeRange"]::-webkit-slider-thumb { width: 54% !important; height: clamp(15px, 3.8vw, 21px) !important; }
-    [class*="volumeRange"]::-moz-range-thumb { width: 54% !important; height: clamp(15px, 3.8vw, 21px) !important; }
+    [class*="volumeRange"]::-webkit-slider-thumb {
+      width: 72% !important;
+      height: clamp(17px, 4.25vw, 24px) !important;
+      border: 1px solid #5d3b27 !important;
+      border-radius: 2px !important;
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,.18) 0 8%, transparent 9% 17%),
+        linear-gradient(to bottom, #a9856d 0%, #98755e 46%, #82614e 58%, #6d4d3c 100%) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.34),
+        inset 0 -2px 0 rgba(38,19,10,.38),
+        inset 2px 0 2px rgba(255,224,194,.12),
+        inset -2px 0 2px rgba(28,14,8,.32),
+        0 2px 2px rgba(0,0,0,.75),
+        0 0 0 1px rgba(19,9,5,.82) !important;
+      transform: none !important;
+    }
+    [class*="volumeRange"]::-moz-range-thumb {
+      width: 72% !important;
+      height: clamp(17px, 4.25vw, 24px) !important;
+      border: 1px solid #5d3b27 !important;
+      border-radius: 2px !important;
+      background: linear-gradient(to bottom, #a9856d 0%, #98755e 46%, #82614e 58%, #6d4d3c 100%) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.34), inset 0 -2px 0 rgba(38,19,10,.38), 0 2px 2px rgba(0,0,0,.75), 0 0 0 1px rgba(19,9,5,.82) !important;
+      transform: none !important;
+    }
   `}</style>{label}{browser}</>;
 }
