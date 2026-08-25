@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { AdminGate } from "@/components/AdminGate";
 import { JamendoProvider } from "@/context/JamendoProvider";
 import { useJamendo } from "@/hooks/useJamendo";
 
@@ -71,8 +72,10 @@ function JamendoTestContent() {
 
 export default function JamendoTestPage() {
   return (
-    <JamendoProvider>
-      <JamendoTestContent />
-    </JamendoProvider>
+    <AdminGate>
+      <JamendoProvider>
+        <JamendoTestContent />
+      </JamendoProvider>
+    </AdminGate>
   );
 }
