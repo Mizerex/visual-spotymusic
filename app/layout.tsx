@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { isValidAdSenseClientId, isValidAdSenseSlotId } from "@/lib/adsense";
 import "./globals.css";
+import "./responsive-desktop.css";
 
 const title = "Visual SpotyMusic — Seu Spotify em uma experiência visual e analógica";
 const description = "Uma experiência visual retrô premium para ouvir e enxergar sua biblioteca Spotify de um jeito mais tátil.";
