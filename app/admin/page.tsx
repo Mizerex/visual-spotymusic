@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+import { AdminGate } from "@/components/AdminGate";
 
 function Status({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   return (
@@ -9,7 +9,7 @@ function Status({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   );
 }
 
-export default function AdminPage() {
+function AdminContent() {
   const jamendoConfigured = Boolean(process.env.NEXT_PUBLIC_JAMENDO_CLIENT_ID?.trim());
   const spotifyConfigured = Boolean(process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID?.trim());
 
@@ -19,13 +19,13 @@ export default function AdminPage() {
         <p style={{ margin: 0, color: "#45ff42", fontSize: 12, fontWeight: 800, letterSpacing: ".18em" }}>VISUAL SPOTYMUSIC • ADMIN</p>
         <h1 style={{ margin: "12px 0 10px", fontSize: "clamp(36px,6vw,64px)", lineHeight: 1 }}>Painel de testes</h1>
         <p style={{ maxWidth: 720, color: "#aeb8af", fontSize: 17, lineHeight: 1.7 }}>
-          Área privada para validar integrações e recursos antes de liberá-los ao público.
+          Área administrativa para validar integrações e recursos antes de liberá-los ao público.
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 12, margin: "28px 0" }}>
           <Status ok={jamendoConfigured}>Jamendo Client ID {jamendoConfigured ? "configurado" : "não configurado neste ambiente"}</Status>
           <Status ok={spotifyConfigured}>Spotify Client ID {spotifyConfigured ? "configurado" : "não configurado neste ambiente"}</Status>
-          <Status ok>Área administrativa protegida</Status>
+          <Status ok>Gate administrativo ativo</Status>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 18 }}>
@@ -48,8 +48,12 @@ export default function AdminPage() {
           </a>
         </div>
 
-        <p style={{ marginTop: 28, color: "#708072", fontSize: 12 }}>Esta página e /jamendo-test não ficam disponíveis sem autenticação administrativa.</p>
+        <p style={{ marginTop: 28, color: "#708072", fontSize: 12 }}>O acesso fica liberado somente na sessão atual do navegador após a senha correta.</p>
       </section>
     </main>
   );
+}
+
+export default function AdminPage() {
+  return <AdminGate><AdminContent /></AdminGate>;
 }
