@@ -17,7 +17,11 @@
   <a href="https://visual-music-premium.manomizer.chatgpt.site/"><strong>Planos e Premium</strong></a>
 </p>
 
-![Visual SpotyMusic](public/og.png)
+[![Visual SpotyMusic — PC, Mobile e TV](docs/media/visual-spotymusic-campanha.png)](docs/media/visual-spotymusic-demo.mp4)
+
+<p align="center">
+  <a href="docs/media/visual-spotymusic-demo.mp4"><strong>▶ Assistir ao vídeo de apresentação (16 segundos)</strong></a>
+</p>
 
 ## Sobre o projeto
 
