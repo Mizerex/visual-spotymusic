@@ -5,7 +5,7 @@ import styles from "./Topbar.module.css";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { playback, profile, previous, next } = useSpotifyAuth();
-  const trackName = playback.track?.name || "Visual SpotyMusic";
+  const trackName = playback.track?.name || "Visual Music";
 
   return (
     <header className={`studio-topbar ${styles.bar}`}>
