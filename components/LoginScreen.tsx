@@ -41,14 +41,14 @@ export function LoginScreen() {
           <img
             className={styles.logo}
             src="/visual-spotymusic-icon.png"
-            alt="Visual SpotyMusic"
+            alt="Visual Music"
             width="320"
             height="320"
           />
 
           <div className={styles.intro}>
             <p className={styles.eyebrow}>EXPERIÊNCIA MUSICAL HI-FI</p>
-            <h1 id="login-heading" className={styles.heading}>Seu Spotify em uma experiência visual e analógica.</h1>
+            <h1 id="login-heading" className={styles.heading}>Sua música em uma experiência visual e analógica.</h1>
             <p className={styles.copy}>
               Entre na sua biblioteca, escolha uma faixa e veja a música ganhar cor,
               movimento e textura em um toca-discos inspirado nos grandes sistemas hi-fi dos anos 70.
