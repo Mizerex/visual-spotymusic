@@ -113,12 +113,12 @@ export function AppShell() {
       }
       if (event.code === "Equal" || event.code === "NumpadAdd") {
         event.preventDefault();
-        void setVolume(levelToVolume(Math.min(100, volumeToLevel(playback.volume) + 2)));
+        void setVolume(levelToVolume(Math.min(100, volumeToLevel(playback.volume) + 2));
         return;
       }
       if (event.code === "Minus" || event.code === "NumpadSubtract") {
         event.preventDefault();
-        void setVolume(levelToVolume(Math.max(0, volumeToLevel(playback.volume) - 2)));
+        void setVolume(levelToVolume(Math.max(0, volumeToLevel(playback.volume) - 2));
       }
     };
 
@@ -169,7 +169,7 @@ export function AppShell() {
     register("seekto", details => {
       const current = playbackRef.current;
       if (!current.track || !Number.isFinite(details?.seekTime)) return;
-      void seek(Math.max(0, Math.min(current.duration, Number(details.seekTime) * 1000)));
+      void seek(Math.max(0, Math.min(current.duration, Number(details.seekTime) * 1000));
     });
 
     return () => {
@@ -220,7 +220,7 @@ export function AppShell() {
   if (!authenticated) return <LoginScreen />;
 
   return <div className="app-shell">
-    <button className="mobile-menu" onClick={() => setSidebarOpen(true)} aria-label="Abrir biblioteca"><Icon name="menu" /><span>VISUAL SPOTYMUSIC</span></button>
+    <button className="mobile-menu" onClick={() => setSidebarOpen(true)} aria-label="Abrir biblioteca"><Icon name="menu" /><span>VISUAL MUSIC</span></button>
     <Sidebar
       open={sidebarOpen}
       onClose={() => setSidebarOpen(false)}
