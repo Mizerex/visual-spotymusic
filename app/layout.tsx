@@ -32,6 +32,46 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       crossOrigin="anonymous"
       src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
     />}
+    <Script id="visual-music-brand-normalizer" strategy="afterInteractive">{`
+      (() => {
+        const replacements = [
+          [/Visual SpotyMusic/g, 'Visual Music'],
+          [/VISUAL SPOTYMUSIC/g, 'VISUAL MUSIC'],
+          [/SpotyMusic/g, 'Visual Music']
+        ];
+        const replaceValue = value => replacements.reduce((text, [pattern, next]) => text.replace(pattern, next), value || '');
+        const normalizeElement = element => {
+          if (!(element instanceof Element)) return;
+          for (const attribute of ['alt', 'aria-label', 'title']) {
+            const value = element.getAttribute(attribute);
+            if (value) element.setAttribute(attribute, replaceValue(value));
+          }
+        };
+        const normalizeTree = root => {
+          const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+          let node;
+          while ((node = walker.nextNode())) {
+            const next = replaceValue(node.nodeValue);
+            if (next !== node.nodeValue) node.nodeValue = next;
+          }
+          if (root instanceof Element) normalizeElement(root);
+          if (root.querySelectorAll) root.querySelectorAll('[alt],[aria-label],[title]').forEach(normalizeElement);
+        };
+        normalizeTree(document.body);
+        new MutationObserver(mutations => {
+          for (const mutation of mutations) {
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeType === Node.TEXT_NODE) {
+                const next = replaceValue(node.nodeValue);
+                if (next !== node.nodeValue) node.nodeValue = next;
+              } else if (node.nodeType === Node.ELEMENT_NODE) {
+                normalizeTree(node);
+              }
+            });
+          }
+        }).observe(document.body, { childList: true, subtree: true });
+      })();
+    `}</Script>
     {children}
   </body></html>;
 }
