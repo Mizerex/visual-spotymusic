@@ -1,134 +1,76 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useJamendo } from "@/hooks/useJamendo";
 
-type RadioStation = {
-  stationuuid: string;
-  name: string;
-  url_resolved: string;
-  favicon?: string;
-  country?: string;
-  tags?: string;
-};
-
-const genres = ["rock", "pop", "jazz", "blues", "classical", "electronic"] as const;
+const genres = [
+  { id: "rock", label: "Rock" },
+  { id: "pop", label: "Pop" },
+  { id: "jazz", label: "Jazz" },
+  { id: "electronic", label: "Eletrônica" },
+  { id: "ambient", label: "Ambient" },
+  { id: "classical", label: "Clássica" },
+] as const;
 
 export function RadioConsole() {
-  const [genre, setGenre] = useState<(typeof genres)[number]>("rock");
-  const [stations, setStations] = useState<RadioStation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [current, setCurrent] = useState<RadioStation | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const {
+    ready,
+    playback,
+    tracks,
+    loading,
+    error,
+    loadTag,
+    playTrack,
+    toggle,
+    stop,
+    previous,
+    next,
+  } = useJamendo();
+  const [genre, setGenre] = useState<(typeof genres)[number]["id"]>("rock");
 
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError("");
-
-    fetch(`https://de1.api.radio-browser.info/json/stations/bytag/${encodeURIComponent(genre)}?hidebroken=true&order=votes&reverse=true&limit=18`)
-      .then(response => {
-        if (!response.ok) throw new Error("Não foi possível carregar as rádios agora.");
-        return response.json();
-      })
-      .then((data: RadioStation[]) => {
-        if (!active) return;
-        setStations(data.filter(station => station.url_resolved));
-      })
-      .catch(reason => {
-        if (!active) return;
-        setStations([]);
-        setError(reason instanceof Error ? reason.message : "Não foi possível carregar as rádios agora.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [genre]);
-
-  useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
-    };
-  }, []);
-
-  const playStation = async (station: RadioStation) => {
-    try {
-      if (current?.stationuuid === station.stationuuid && audioRef.current) {
-        if (playing) {
-          audioRef.current.pause();
-          setPlaying(false);
-        } else {
-          await audioRef.current.play();
-          setPlaying(true);
-        }
-        return;
-      }
-
-      audioRef.current?.pause();
-      const audio = new Audio(station.url_resolved);
-      audio.preload = "none";
-      audioRef.current = audio;
-      setCurrent(station);
-      setPlaying(true);
-      setError("");
-      audio.addEventListener("pause", () => setPlaying(false));
-      audio.addEventListener("playing", () => setPlaying(true));
-      audio.addEventListener("error", () => {
-        setPlaying(false);
-        setError("Esta estação não respondeu. Tente outra rádio.");
-      });
-      await audio.play();
-    } catch {
-      setPlaying(false);
-      setError("Esta estação não pôde ser reproduzida. Tente outra rádio.");
-    }
-  };
-
-  const stop = () => {
-    audioRef.current?.pause();
-    if (audioRef.current) audioRef.current.currentTime = 0;
-    setPlaying(false);
-    setCurrent(null);
-  };
+    if (ready) void loadTag(genre, 24);
+  }, [genre, loadTag, ready]);
 
   return (
-    <section className="library-console" aria-label="Rádio online">
+    <section className="library-console" aria-label="Rádio Jamendo">
       <header className="library-console-heading">
         <div>
-          <p className="eyebrow">RÁDIO ONLINE</p>
+          <p className="eyebrow">RÁDIO JAMENDO</p>
           <h2>Rádio</h2>
           <p className="library-console-category">Acesso livre para visitantes</p>
         </div>
-        <span>{stations.length || "—"} estações</span>
+        <span>{tracks.length || "—"} faixas</span>
       </header>
 
       <div className="category-tabs" style={{ marginBottom: 14 }}>
         {genres.map(item => (
           <button
-            key={item}
+            key={item.id}
             type="button"
-            className={genre === item ? "active" : ""}
-            onClick={() => setGenre(item)}
+            className={genre === item.id ? "active" : ""}
+            onClick={() => setGenre(item.id)}
           >
-            <span>{item.charAt(0).toUpperCase() + item.slice(1)}</span>
+            <span>{item.label}</span>
           </button>
         ))}
       </div>
 
-      {current && (
+      {playback.track && (
         <div className="library-console-detail-actions">
-          <button type="button" className="library-console-play-all" onClick={() => void playStation(current)}>
-            {playing ? "❚❚ Pausar" : "▶ Continuar"}
+          <button type="button" className="library-console-back" onClick={() => void previous()}>← Anterior</button>
+          <button type="button" className="library-console-play-all" onClick={() => void toggle()}>
+            {playback.isPlaying ? "❚❚ Pausar" : "▶ Continuar"}
           </button>
-          <button type="button" className="library-console-back" onClick={stop}>■ Parar</button>
-          <span style={{ alignSelf: "center" }}>No ar: <strong>{current.name}</strong></span>
+          <button type="button" className="library-console-back" onClick={() => void stop()}>■ Parar</button>
+          <button type="button" className="library-console-back" onClick={() => void next()}>Próxima →</button>
         </div>
+      )}
+
+      {playback.track && (
+        <p style={{ margin: "8px 0 14px" }}>
+          No ar: <strong>{playback.track.name}</strong> — {playback.track.artists.map(artist => artist.name).join(", ")}
+        </p>
       )}
 
       {error && <p role="alert" style={{ margin: "10px 0" }}>{error}</p>}
@@ -137,29 +79,29 @@ export function RadioConsole() {
         {loading ? (
           <div className="library-console-empty">
             <span>◌</span>
-            <strong>Carregando rádios…</strong>
-            <small>Buscando estações disponíveis.</small>
+            <strong>Carregando rádio…</strong>
+            <small>Buscando músicas no Jamendo.</small>
           </div>
-        ) : stations.length ? stations.map(station => (
+        ) : tracks.length ? tracks.map(track => (
           <button
-            key={station.stationuuid}
+            key={`jamendo-radio-${track.id}`}
             type="button"
-            className={current?.stationuuid === station.stationuuid ? "featured" : ""}
-            onClick={() => void playStation(station)}
+            className={playback.track?.id === track.id ? "featured" : ""}
+            onClick={() => void playTrack(track, tracks)}
           >
             <span className="library-console-cover">
-              {station.favicon ? <img src={station.favicon} alt="" /> : <i aria-hidden="true">◉</i>}
+              {track.image ? <img src={track.image} alt="" /> : <i aria-hidden="true">◉</i>}
             </span>
             <span>
-              <strong>{station.name}</strong>
-              <small>{station.country || "Rádio online"}{station.tags ? ` · ${station.tags.split(",").slice(0, 2).join(", ")}` : ""}</small>
+              <strong>{track.name}</strong>
+              <small>{track.artists.map(artist => artist.name).join(", ")} · Jamendo</small>
             </span>
-            <b aria-hidden="true">{current?.stationuuid === station.stationuuid && playing ? "❚❚" : "▶"}</b>
+            <b aria-hidden="true">{playback.track?.id === track.id && playback.isPlaying ? "❚❚" : "▶"}</b>
           </button>
         )) : (
           <div className="library-console-empty">
             <span>◉</span>
-            <strong>Nenhuma estação disponível</strong>
+            <strong>Nenhuma faixa disponível</strong>
             <small>Tente outro estilo musical.</small>
           </div>
         )}
