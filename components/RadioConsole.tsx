@@ -33,10 +33,10 @@ export function RadioConsole() {
   }, [genre, loadTag, ready]);
 
   return (
-    <section className="library-console" aria-label="Rádio Jamendo">
+    <section className="library-console" aria-label="Rádio">
       <header className="library-console-heading">
         <div>
-          <p className="eyebrow">RÁDIO JAMENDO</p>
+          <p className="eyebrow">RÁDIO</p>
           <h2>Rádio</h2>
           <p className="library-console-category">Acesso livre para visitantes</p>
         </div>
@@ -80,7 +80,7 @@ export function RadioConsole() {
           <div className="library-console-empty">
             <span>◌</span>
             <strong>Carregando rádio…</strong>
-            <small>Buscando músicas no Jamendo.</small>
+            <small>Buscando músicas para esta estação.</small>
           </div>
         ) : tracks.length ? tracks.map(track => (
           <button
@@ -94,7 +94,7 @@ export function RadioConsole() {
             </span>
             <span>
               <strong>{track.name}</strong>
-              <small>{track.artists.map(artist => artist.name).join(", ")} · Jamendo</small>
+              <small>{track.artists.map(artist => artist.name).join(", ")}</small>
             </span>
             <b aria-hidden="true">{playback.track?.id === track.id && playback.isPlaying ? "❚❚" : "▶"}</b>
           </button>
