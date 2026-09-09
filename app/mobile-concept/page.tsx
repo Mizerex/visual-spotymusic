@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SpotifyProvider } from "@/context/SpotifyProvider";
 import { MobileCassettePlayer } from "./MobileCassettePlayer";
+import "./radio-badge.css";
 
 export const metadata: Metadata = {
   title: "Visual SpotyMusic — Interface mobile",
