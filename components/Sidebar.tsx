@@ -93,8 +93,10 @@ export function Sidebar({
           className={`nav-item ${activeView === "radio" ? "active" : ""}`}
           aria-current={activeView === "radio" ? "page" : undefined}
           onClick={() => onViewChange("radio")}
+          title="Rádio grátis para visitantes"
         >
           <Icon name="radio" /> Rádio
+          <small style={{ marginLeft: "auto", fontSize: 9, fontWeight: 800, letterSpacing: ".08em", padding: "2px 6px", borderRadius: 999, border: "1px solid currentColor" }}>GRÁTIS</small>
         </button>
       </nav>
 
